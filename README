@@ -26,7 +26,7 @@ The model emerges from the data. Let's start by looking up 'why':
 
   why = Hubbit 'why'
 
-Let's see what new methods we have:
+What new methods do we have?
 
   Hubbit.morph_methods # => ["email", "email=", "name", "name="]
 
@@ -39,13 +39,13 @@ Let's do some more morphing:
 
   dhh = Hubbit 'dhh'
 
-What methods do we have now:
+Do we have more methods now?
 
   Hubbit.morph_methods # => ["blog", "blog=", "company", "company=",
                              "email", "email=", "location", "location=",
                              "name", "name="]
 
-So dhh's company is:
+So dhh has a company:
 
   dhh.company #=> "37signals"
 
@@ -53,9 +53,90 @@ So dhh's company is:
 Time to print the nascent method definition:
 
   puts Hubbit.print_morph_methods
+
   # attr_accessor :name
   # attr_accessor :email
   # attr_accessor :blog
   # attr_accessor :company
   # attr_accessor :location
+
+
+See /examples directory for more example code.
+See COPYING for the terms of this software.
+
+                                                     ,
+                                                 ?7+~::+II~
+                                                ?7:     ,:+7
+                             777IIII777?        7:         :?7
+                          =I=           I:      7?          ,+7
+                         I?         ,,   77      7:           :I
+                        =  ?7777   77  7   7      7+,          :7
+                       7   777777 ~77+=77  I+      I?          ,7
+                      :7  77  ~77  I   I7   7       ?:          ?
+                      I   77   7,  7    7   :I       I          ?
+                      7   ?77=7~    77777    7      ~+          ,+
+                      7~                     7  :I7?~            7
+                      =?                     7 ?I    ~I77=       I=
+                       7    ?          :,   7  I7777,     7       7
+                        ?    777?~~7777+    7              7~      7
+                        ?7    ,777777=,   ,7                7      ,7
+                          7=      ,      =7                 7:      7
+                            +7         :7                    7      ,I
+                             :7        ?~                   7?       7
+                              7         7              ~II7~,        7
+                              7         7  ,  =7777777?+,,,         I=
+                            :7,          ~==,                       7
+                       II~,,                                     77~
+                    ,I?                                      +777
+                   7+,                                 ~7777:
+                 ==                               :77
+               :7:                              ,7I
+             7I                                 7
+            I          ,7,                      7
+          =7          77=7                      7
+        ,7          7I   7                      7
+        I,        I7     7                      7
+       ?,       ,7       7,                     7
+       7       7~        7,                     7
+       7      ,7I        7                      7
+       =+       =7       7                      ~=
+        =7        7,     7                       7
+         ,7,       ~7IIII7+,                     7
+           +:              II                    I
+            ?7              I?                   +~
+              II,           +I                    7
+                ~7          ,I                    7
+                  7=        ~7                    7
+                   ?7,     ~7+                    ?~
+                     ~7777I=                      ,7
+                         7:                        7
+                         I                         7
+                         I          ,:77I          7
+                         I          :7             I
+                         I                         =~
+                         7               ,         ,7
+                         +,         7    :         ,7
+                          +         7    +          7
+                          +         7    +         ,7
+                          7         I    ?         ,7
+                          7         +:   7         ,7
+                          7         =+   7         ,7
+                          7         :I   I         ,7
+                          7         :I   7          7
+                          7         :I   I          7
+                          I,        ,7   I:         7
+                          =+        ,7    ?         7
+                          :?,       ,7    7,        7
+                          I:        ,7    7,        ?
+                         :7         ,7    7,        ,
+                        +I,         :     ?         ,=
+                       +=           ~     =~         7
+                    :II,,           =      I         ?
+                =I=                 ?      7,        :7
+              II~                   I      7,         ,II
+            7~                      ~7     7            ,=7
+            =                       =7     I,             ::
+            77II?==?II777777777777777      7~              7
+                                            77+,,          7:
+                                               777777+:,~777
 

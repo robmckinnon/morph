@@ -1,6 +1,7 @@
 examples/forger.rb
 examples/hubbit.rb
 lib/morph.rb
+COPYING
 README
 spec/morph_spec.rb
 spec/spec.opts
