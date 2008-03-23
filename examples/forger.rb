@@ -7,8 +7,8 @@ class Forger
 
   def initialize name
     begin
-      ruby_forge_url = "http://rubyforge.org/users/#{name}"
-      doc = Hpricot open(ruby_forge_url)
+      doc = Hpricot open("http://rubyforge.org/users/#{name}")
+
       table = doc.at('td[text() = "Personal Information"]').parent.parent
       values = table/'tr/td/strong'
 

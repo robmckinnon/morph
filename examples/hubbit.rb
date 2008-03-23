@@ -7,10 +7,9 @@ class Hubbit
 
   def initialize name
     begin
-      github_url = "http://github.com/#{name}"
-      labels = Hpricot(open(github_url)) / 'label'
+      doc = Hpricot open("http://github.com/#{name}")
 
-      labels.collect do |node|
+      (doc/'label').collect do |node|
         label = node.inner_text
         value = node.next_sibling.inner_text.strip
 
