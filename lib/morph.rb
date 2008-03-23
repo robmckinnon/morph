@@ -7,6 +7,7 @@ module Morph
   end
 
   module ClassMethods
+
     @@morph_methods = {}
 
     def convert_to_morph_method_name label
