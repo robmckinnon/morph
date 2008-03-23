@@ -61,7 +61,7 @@ Time to print the nascent method definition:
   # attr_accessor :location
 
 
-See /examples directory for more example code.
+See examples/ directory for more example code.
 See COPYING for the terms of this software.
 
                                                      ,
