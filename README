@@ -1,4 +1,5 @@
-Morph allows you generate class definitions via calling assignment methods. Unlike OpenStruct, it's not a wrapper around a hash, but instead adds methods to a class. Mix with Hpricot for screen scrapping fun.
+Morph allows you emerge class definitions via calling assignment methods.
+Mix with Hpricot for screen scrapping fun.
 
 Here's example code showing Morph playing with Hpricot:
 
