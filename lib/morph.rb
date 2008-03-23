@@ -7,7 +7,7 @@ module Morph
   end
 
   module ClassMethods
-    @@morph_methods = []
+    @@morph_methods = {}
 
     def convert_to_morph_method_name label
       name = label.downcase.tr('()*',' ').gsub('%','percentage').strip.chomp(':').strip.gsub(/\s/,'_').squeeze('_')
@@ -17,13 +17,13 @@ module Morph
 
     def morph_accessor symbol
       attribute = symbol.to_s
-      @@morph_methods << attribute
-      @@morph_methods << attribute+'='
+      @@morph_methods[attribute] = true
+      @@morph_methods[attribute+'='] = true
       class_eval "attr_accessor :#{attribute}"
     end
 
     def morph_methods
-      @@morph_methods
+      @@morph_methods.keys.sort
     end
 
     def remove_method symbol
