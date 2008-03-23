@@ -1,4 +1,4 @@
-Morph allows you emerge class definitions via calling assignment methods.
+Morph allows you to emerge class definitions via calling assignment methods.
 Mix with Hpricot for screen scrapping fun.
 
 Here's example code showing Morph playing with Hpricot:
