@@ -1,0 +1,7 @@
+examples/forger.rb
+examples/hubbit.rb
+lib/morph.rb
+README
+spec/morph_spec.rb
+spec/spec.opts
+Manifest

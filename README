@@ -1,0 +1,52 @@
+Morph allows you generate class definitions via calling assignment methods. Unlike OpenStruct, it's not a wrapper around a hash, but instead adds methods to a class. Mix with Hpricot for screen scrapping fun.
+
+Here's an example of Morph playing with Hpricot:
+
+  require 'hpricot'; require 'open-uri'; require 'morph'
+
+  class Hubbit
+
+    include Morph  # allows class to morph
+
+    def initialize name
+      github_page = "http://github.com/#{name}"
+      labels = Hpricot(open(github_page)) / 'label'
+
+      labels.collect do |node|
+        label = node.inner_text
+        value = node.next_sibling.inner_text.strip
+
+        morph(label, value) # magic morphing happening here!
+      end
+    end
+  end
+
+  why = Hubbit.new 'why'
+
+  why.name #=> "why the lucky stiff"
+
+
+The model emerges from the data. Let's see what new methods we have:
+
+  Hubbit.morph_methods # => ["email", "email=", "name", "name="]
+
+
+Let's do some more morphing:
+
+  dhh = Hubbit.new 'dhh'
+  dhh.company #=> "37signals"
+
+
+  Hubbit.morph_methods # => ["blog", "blog=", "company", "company=",
+                             "email", "email=", "location", "location=",
+                             "name", "name="]
+
+Want to print the nascent method definition? No worries:
+
+  puts Hubbit.print_morph_methods
+  # attr_accessor :name
+  # attr_accessor :email
+  # attr_accessor :blog
+  # attr_accessor :company
+  # attr_accessor :location
+
