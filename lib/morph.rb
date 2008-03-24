@@ -1,5 +1,5 @@
 module Morph
-  VERSION = "0.1.0"
+  VERSION = "0.1.1"
 
   def self.included(base)
     base.extend ClassMethods
@@ -64,18 +64,22 @@ module Morph
     end
 
     def method_missing symbol, *args
-      attribute = symbol.to_s.chomp '='
-      if Object.instance_methods.include?(attribute)
-        raise "'#{attribute}' is an instance_method on Object, cannot create accessor methods for '#{attribute}'"
-      else
-        is_writer = symbol.to_s =~ /=\Z/
-        if is_writer
+      is_writer = symbol.to_s =~ /=\Z/
+
+      if is_writer
+        attribute = symbol.to_s.chomp '='
+        if Object.instance_methods.include?(attribute)
+          raise "'#{attribute}' is an instance_method on Object, cannot create accessor methods for '#{attribute}'"
+        elsif args.size > 0
           value = args[0]
           empty_value = (value.nil? or (value.is_a?(String) && value.strip.size == 0))
-          return if empty_value
+          unless empty_value
+            self.class.morph_accessor attribute.to_sym
+            send(symbol, *args)
+          end
         end
-        self.class.morph_accessor attribute.to_sym
-        send(symbol, *args)
+      else
+        super
       end
     end
   end
