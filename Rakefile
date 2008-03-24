@@ -9,6 +9,7 @@ begin
     morph.author = ["Rob McKinnon"]
     morph.email = ["rob ~@nospam@~ rubyforge.org"]
     morph.description = File.readlines("README").first
+    morph.rubyforge_name = "morph"
   end
 
 rescue LoadError
