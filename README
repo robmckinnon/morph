@@ -22,6 +22,7 @@ Here's example code showing Morph playing with Hpricot:
 
   def Hubbit name; Hubbit.new name; end
 
+
 The model emerges from the data. Let's start by looking up 'why':
 
   why = Hubbit 'why'
