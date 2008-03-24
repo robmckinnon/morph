@@ -1,1 +1,3 @@
+v0.1.1. calling unknown reader method no longer adds accessor methods to class
+
 v0.1.0. initial release
