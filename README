@@ -36,6 +36,17 @@ Ah-ha, so we have a name attribute now:
   why.name #=> "why the lucky stiff"
 
 
+Let's add some of why's projects:
+
+  why.projects = %w[shoes hacketyhack camping hoodwinkd hpricot markaby
+                    mousehole parkplace poignant sandbox]
+
+That why's a productive fellow! Note new accessor methods have been added:
+
+  Hubbit.morph_methods # => ["email", "email=", "name", "name=",
+                             "projects", "projects="]
+
+
 Let's do some more morphing:
 
   dhh = Hubbit 'dhh'
@@ -43,10 +54,10 @@ Let's do some more morphing:
 Do we have more methods now?
 
   Hubbit.morph_methods # => ["blog", "blog=", "company", "company=",
-                             "email", "email=", "location", "location=",
-                             "name", "name="]
+                             "email", "email=", "location", "location="
+                             "name", "name=", "projects", "projects="]
 
-So dhh has a company:
+So, a new company method has appeared:
 
   dhh.company #=> "37signals"
 
@@ -60,6 +71,7 @@ Time to print the nascent attribute definitions:
   # attr_accessor :blog
   # attr_accessor :company
   # attr_accessor :location
+  # attr_accessor :projects
 
 
 See examples/ directory for more example code.
