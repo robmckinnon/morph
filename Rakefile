@@ -11,7 +11,7 @@ begin
     morph.description = File.readlines("README").first
     morph.rubyforge_name = "morph"
     morph.rdoc_options = ['--quiet', '--title', 'The Morph Reference', '--main', 'README', '--inline-source']
-    morph.rdoc_files = ["README", "CHANGELOG", "LICENSE", "lib/morph.rb"]
+    morph.extra_rdoc_files = ["README", "CHANGELOG", "LICENSE"]
   end
 
 rescue LoadError
