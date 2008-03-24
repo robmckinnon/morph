@@ -50,7 +50,7 @@ So dhh has a company:
   dhh.company #=> "37signals"
 
 
-Time to print the nascent method definition:
+Time to print the nascent attribute definitions:
 
   puts Hubbit.print_morph_methods
 
