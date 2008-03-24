@@ -147,8 +147,8 @@ end
 describe Morph, "when writer method that didn't exist before is called with nil value" do
   before :each do
     remove_morph_methods
-    @morph.morph('Pizza', nil)
-    @attribute = 'pizza'
+    @morph.noise= nil
+    @attribute = 'noise'
   end
 
   it_should_behave_like "class without generated accessor methods added"
