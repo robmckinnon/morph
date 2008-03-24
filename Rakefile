@@ -5,13 +5,13 @@ require 'lib/morph'
 begin
   require 'echoe'
 
-  Echoe.new("morph", Morph::VERSION) do |morph|
-    morph.author = ["Rob McKinnon"]
-    morph.email = ["rob ~@nospam@~ rubyforge.org"]
-    morph.description = File.readlines("README").first
-    morph.rubyforge_name = "morph"
-    morph.rdoc_options = ['--quiet', '--title', 'The Morph Reference', '--main', 'README', '--inline-source']
-    morph.extra_rdoc_files = ["README", "CHANGELOG", "LICENSE"]
+  Echoe.new("morph", Morph::VERSION) do |m|
+    m.author = ["Rob McKinnon"]
+    m.email = ["rob ~@nospam@~ rubyforge.org"]
+    m.description = File.readlines("README").first
+    m.rubyforge_name = "morph"
+    m.rdoc_options << '--inline-source'
+    m.rdoc_pattern = ["README", "CHANGELOG", "LICENSE", "lib/*"]
   end
 
 rescue LoadError
