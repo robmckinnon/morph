@@ -15,7 +15,7 @@ Here's example code showing Morph playing with Hpricot:
         label = node.inner_text
         value = node.next_sibling.inner_text.strip
 
-        morph(label, value) # magic morphing happening here!
+        morph(label, value) # morph magic happening here!
       end
     end
   end
