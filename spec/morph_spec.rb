@@ -56,6 +56,23 @@ describe Morph, 'when morph method used to set attribute value' do
   end
 end
 
+describe Morph, 'when morph method used to set an attribute value hash' do
+  before :each do
+    remove_morph_methods
+    @attributes = [:drink,:sugars,:milk]
+    @morph.morph :drink => 'tea', :sugars => 2, :milk => 'yes please'
+    @expected_morph_methods_count = 6
+  end
+
+  it_should_behave_like "class with generated accessor methods added"
+
+  it 'should return assigned value when reader method called' do
+    @morph.drink.should == 'tea'
+    @morph.sugars.should == 2
+    @morph.milk.should == 'yes please'
+  end
+end
+
 describe Morph, "when morph method used to set unicode attribute name with a value" do
   before :each do
     $KCODE = "u"

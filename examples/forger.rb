@@ -1,4 +1,4 @@
-require 'hpricot'; require 'open-uri'; require 'morph'
+require 'rubygems'; require 'hpricot'; require 'open-uri'; require 'morph'
 
 # An example of Morph playing with Hpricot
 class Forger

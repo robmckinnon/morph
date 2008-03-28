@@ -30,6 +30,14 @@ module MorphSpecHelperMethods
     initialize_morph_class
     @morphed_class.convert_to_morph_method_name(label).should == method_name
   end
+
+  def each_attribute
+    if @attribute
+      yield @attribute
+    elsif @attributes
+      @attributes.each {|a| yield a }
+    end
+  end
 end
 
 describe "class with generated accessor methods added", :shared => true do
@@ -39,19 +47,19 @@ describe "class with generated accessor methods added", :shared => true do
   after  :all do remove_morph_methods; end
 
   it 'should add reader method to class instance_methods list' do
-    instance_methods.include?(@attribute).should == true
+    each_attribute { |a| instance_methods.include?(a.to_s).should == true }
   end
 
   it 'should add writer method to class instance_methods list' do
-    instance_methods.include?("#{@attribute}=").should == true
+    each_attribute { |a| instance_methods.include?("#{a}=").should == true }
   end
 
   it 'should add reader method to class morph_methods list' do
-    morph_methods.include?(@attribute).should == true
+    each_attribute { |a| morph_methods.include?(a.to_s).should == true }
   end
 
   it 'should add writer method to class morph_methods list' do
-    morph_methods.include?("#{@attribute}=").should == true
+    each_attribute { |a| morph_methods.include?("#{a}=").should == true }
   end
 
   it 'should only have generated accessor methods in morph_methods list' do
@@ -59,7 +67,10 @@ describe "class with generated accessor methods added", :shared => true do
   end
 
   it 'should be able to print morph method declarations' do
-    @morphed_class.print_morph_methods.should == %Q|attr_accessor :#{@attribute}|
+    each_attribute do |a|
+      accessor = %Q|attr_accessor :#{a}|
+      @morphed_class.print_morph_methods.include?(accessor).should == true
+    end
   end
 end
 

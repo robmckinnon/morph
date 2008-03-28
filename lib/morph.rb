@@ -1,5 +1,5 @@
 module Morph
-  VERSION = "0.1.1"
+  VERSION = "0.1.3"
 
   def self.included(base)
     base.extend ClassMethods
@@ -58,9 +58,14 @@ module Morph
 
   module InstanceMethods
 
-    def morph label, value
-      attribute = self.class.convert_to_morph_method_name label
-      send("#{attribute}=".to_sym, value)
+    def morph attributes, value=nil
+      if attributes.is_a? Hash
+        attributes.each { |a, v| morph(a, v) }
+      else
+        label = attributes
+        attribute = label.is_a?(String) ? self.class.convert_to_morph_method_name(label) : label
+        send("#{attribute}=".to_sym, value)
+      end
     end
 
     def method_missing symbol, *args

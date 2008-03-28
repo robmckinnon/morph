@@ -60,16 +60,29 @@ So, a new company method has appeared:
  dhh.company #=> "37signals"
 
 
+How about adding a hash of attribute values?
+
+ why.morph :drink => 'tea', :sugars => 2, :milk => 'yes please'
+
+ why.drink => "tea"
+ why.sugars => 2
+ why.milk => "yes please"
+
+
 Time to print the nascent attribute definitions:
 
  puts Hubbit.print_morph_methods
 
- # attr_accessor :name
- # attr_accessor :email
- # attr_accessor :blog
- # attr_accessor :company
- # attr_accessor :location
- # attr_accessor :projects
+ attr_accessor :blog
+ attr_accessor :company
+ attr_accessor :drink
+ attr_accessor :email
+ attr_accessor :location
+ attr_accessor :milk
+ attr_accessor :name
+ attr_accessor :projects
+ attr_accessor :sugars
+ => nil
 
 
 See examples/ directory for more example code.
