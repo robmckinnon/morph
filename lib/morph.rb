@@ -58,6 +58,25 @@ module Morph
 
   module InstanceMethods
 
+    #
+    # Set attribute value(s). Adds accessor methods to class if
+    # they are not already present.
+    #
+    # Can be called with a +string+ and a value, a +symbol+ and a value,
+    # or with a +hash+ of attribute to value pairs. For example.
+    #
+    #   require 'rubygems'; require 'morph'
+    #
+    #   class Order; include Morph; end
+    #
+    #   order = Order.new
+    #   order.morph :drink => 'tea', :sugars => 2, 'milk' => 'yes please'
+    #   order.morph 'Payment type:', 'will wash dishes'
+    #   order.morph :lemon, false
+    #
+    #   p order # -> #<Order:0x33c50c @lemon=false, @milk="yes please",
+    #                @payment_type="will wash dishes", @sugars=2, @drink="tea">
+    #
     def morph attributes, value=nil
       if attributes.is_a? Hash
         attributes.each { |a, v| morph(a, v) }
