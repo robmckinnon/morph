@@ -11,7 +11,7 @@ begin
     m.description = File.readlines("README").first
     m.rubyforge_name = "morph"
     m.rdoc_options << '--inline-source'
-    m.rdoc_pattern = ["README", "CHANGELOG", "LICENSE", "lib/*"]
+    m.rdoc_pattern = ["README", "CHANGELOG", "LICENSE"]
   end
 
 rescue LoadError

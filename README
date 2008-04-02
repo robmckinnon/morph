@@ -62,11 +62,11 @@ So, a new company method has appeared:
 
 How about adding a hash of attribute values?
 
- why.morph :drink => 'tea', :sugars => 2, :milk => 'yes please'
+ why.morph :drink => 'tea', :spoons_of_sugar => 2, :milk => 'prefer soya thanks'
 
- why.drink => "tea"
- why.sugars => 2
- why.milk => "yes please"
+ why.drink  # => "tea"
+ why.spoons_of_sugar  # => 2
+ why.milk  # => "prefer soya thanks"
 
 
 Time to print the nascent attribute definitions:
@@ -81,7 +81,7 @@ Time to print the nascent attribute definitions:
  attr_accessor :milk
  attr_accessor :name
  attr_accessor :projects
- attr_accessor :sugars
+ attr_accessor :spoons_of_sugar
  => nil
 
 
