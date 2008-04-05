@@ -47,19 +47,19 @@ describe "class with generated accessor methods added", :shared => true do
   after  :all do remove_morph_methods; end
 
   it 'should add reader method to class instance_methods list' do
-    each_attribute { |a| instance_methods.include?(a.to_s).should == true }
+    each_attribute { |a| instance_methods.should include(a.to_s) }
   end
 
   it 'should add writer method to class instance_methods list' do
-    each_attribute { |a| instance_methods.include?("#{a}=").should == true }
+    each_attribute { |a| instance_methods.should include("#{a}=") }
   end
 
   it 'should add reader method to class morph_methods list' do
-    each_attribute { |a| morph_methods.include?(a.to_s).should == true }
+    each_attribute { |a| morph_methods.should include(a.to_s) }
   end
 
   it 'should add writer method to class morph_methods list' do
-    each_attribute { |a| morph_methods.include?("#{a}=").should == true }
+    each_attribute { |a| morph_methods.should include("#{a}=") }
   end
 
   it 'should only have generated accessor methods in morph_methods list' do
@@ -69,7 +69,7 @@ describe "class with generated accessor methods added", :shared => true do
   it 'should be able to print morph method declarations' do
     each_attribute do |a|
       accessor = %Q|attr_accessor :#{a}|
-      @morphed_class.print_morph_methods.include?(accessor).should == true
+      @morphed_class.print_morph_methods.should include(accessor)
     end
   end
 end
@@ -86,19 +86,19 @@ describe "class without generated accessor methods added", :shared => true do
   end
 
   it 'should not add reader method to class instance_methods list' do
-    instance_methods.include?(@attribute).should == false
+    instance_methods.should_not include(@attribute)
   end
 
   it 'should not add writer method to class instance_methods list' do
-    instance_methods.include?("#{@attribute}=").should == false
+    instance_methods.should_not include("#{@attribute}=")
   end
 
   it 'should not add reader method to class morph_methods list' do
-    morph_methods.include?(@attribute).should == false
+    morph_methods.should_not include(@attribute)
   end
 
   it 'should not add writer method to class morph_methods list' do
-    morph_methods.include?("#{@attribute}=").should == false
+    morph_methods.should_not include("#{@attribute}=")
   end
 
   it 'should have empty morph_methods list' do

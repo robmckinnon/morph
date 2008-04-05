@@ -1,5 +1,5 @@
 module Morph
-  VERSION = "0.1.3"
+  VERSION = "0.1.4"
 
   def self.included(base)
     base.extend ClassMethods
@@ -16,7 +16,7 @@ module Morph
       name
     end
 
-    def morph_accessor symbol
+    def morph_accessor symbol, &block
       attribute = symbol.to_s
       @@morph_methods[attribute] = true
       @@morph_methods[attribute+'='] = true
@@ -91,19 +91,29 @@ module Morph
       is_writer = symbol.to_s =~ /=\Z/
 
       if is_writer
-        attribute = symbol.to_s.chomp '='
-        if Object.instance_methods.include?(attribute)
-          raise "'#{attribute}' is an instance_method on Object, cannot create accessor methods for '#{attribute}'"
-        elsif args.size > 0
-          value = args[0]
-          empty_value = (value.nil? or (value.is_a?(String) && value.strip.size == 0))
-          unless empty_value
-            self.class.morph_accessor attribute.to_sym
-            send(symbol, *args)
-          end
-        end
+        morph_method_missing symbol, *args
       else
         super
+      end
+    end
+
+    def morph_method_missing symbol, *args, &block
+      attribute = symbol.to_s.chomp '='
+      if Object.instance_methods.include?(attribute)
+        raise "'#{attribute}' is an instance_method on Object, cannot create accessor methods for '#{attribute}'"
+      elsif args.size > 0
+        value = args[0]
+        empty_value = (value.nil? or (value.is_a?(String) && value.strip.size == 0))
+        unless empty_value
+          if block_given?
+            self.class.morph_accessor attribute.to_sym, &block
+          else
+            self.class.morph_accessor attribute.to_sym do ||
+              attr_accessor attribute.to_sym
+            end
+          end
+          send(symbol, *args)
+        end
       end
     end
   end

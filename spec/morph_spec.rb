@@ -1,7 +1,6 @@
 require File.dirname(__FILE__) + '/../lib/morph'
 require File.dirname(__FILE__) + '/morph_spec_helper'
 
-
 describe Morph, "when writer method that didn't exist before is called with non-nil value" do
   before :each do
     remove_morph_methods
@@ -167,8 +166,22 @@ describe Morph, "when class= is called" do
     lambda { @morph.class = nil }.should raise_error(/cannot create accessor methods/)
   end
 end
+=begin
+describe Morph, 'when passing block to morph_method_missing' do
 
+  include MorphSpecHelperMethods
+  before :all do initialize_morph; end
+  after  :all do remove_morph_methods; end
 
+  it 'should class_eval the block' do
+    @morph.morph_method_missing :noise, 'quack' do ||
+      def chunky
+        'bacon'
+      end
+    end
+  end
+end
+=end
 describe Morph, 'when remove_morph_writers is called after a generated method has been added' do
 
   include MorphSpecHelperMethods
