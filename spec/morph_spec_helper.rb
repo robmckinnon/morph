@@ -2,12 +2,14 @@ require File.dirname(__FILE__) + '/../lib/morph'
 
 module MorphSpecHelperMethods
 
-  def initialize_morph_class
-    @morphed_class = eval 'class ExampleMorph; include Morph; end'
+  def initialize_morph_class code=nil
+    code = 'class ExampleMorph; include Morph; end' unless code
+    eval code
+    @morphed_class = ExampleMorph
   end
 
-  def initialize_morph
-    initialize_morph_class
+  def initialize_morph code=nil
+    initialize_morph_class code
     @original_instance_methods = @morphed_class.instance_methods
     @morph = @morphed_class.new
   end

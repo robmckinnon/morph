@@ -4,10 +4,12 @@ module Morph
   def self.included(base)
     base.extend ClassMethods
     base.send(:include, InstanceMethods)
+    base.send(:include, MethodMissing)
   end
 
   module ClassMethods
 
+    @@is_morphing = false
     @@morph_methods = {}
 
     def convert_to_morph_method_name label
@@ -16,20 +18,24 @@ module Morph
       name
     end
 
-    def morph_accessor symbol, &block
-      attribute = symbol.to_s
-      @@morph_methods[attribute] = true
-      @@morph_methods[attribute+'='] = true
-      class_eval "attr_accessor :#{attribute}"
+    def set_is_morphing true_or_false
+      @@is_morphing = true_or_false
+    end
+
+    def method_added symbol
+      @@morph_methods[symbol.to_s] = true if @@is_morphing
+    end
+
+    def method_removed symbol
+      @@morph_methods.delete symbol.to_s if @@morph_methods.has_key? symbol.to_s
+    end
+
+    def class_def name, &block
+      class_eval { define_method name, &block }
     end
 
     def morph_methods
       @@morph_methods.keys.sort
-    end
-
-    def remove_method symbol
-      @@morph_methods.delete symbol.to_s
-      super
     end
 
     def remove_morph_writers
@@ -53,6 +59,18 @@ module Morph
       attributes += writers.collect {  |attribute| "attr_writer :#{attribute}\n" }
 
       attributes.join.chop
+    end
+  end
+
+  module MethodMissing
+    def method_missing symbol, *args
+      is_writer = symbol.to_s =~ /=\Z/
+
+      if is_writer
+        morph_method_missing symbol, *args
+      else
+        super
+      end
     end
   end
 
@@ -87,16 +105,6 @@ module Morph
       end
     end
 
-    def method_missing symbol, *args
-      is_writer = symbol.to_s =~ /=\Z/
-
-      if is_writer
-        morph_method_missing symbol, *args
-      else
-        super
-      end
-    end
-
     def morph_method_missing symbol, *args, &block
       attribute = symbol.to_s.chomp '='
       if Object.instance_methods.include?(attribute)
@@ -105,14 +113,14 @@ module Morph
         value = args[0]
         empty_value = (value.nil? or (value.is_a?(String) && value.strip.size == 0))
         unless empty_value
+          self.class.set_is_morphing true
           if block_given?
-            self.class.morph_accessor attribute.to_sym, &block
+            yield self.class, attribute
           else
-            self.class.morph_accessor attribute.to_sym do ||
-              attr_accessor attribute.to_sym
-            end
+            self.class.class_eval "attr_accessor :#{attribute}"
+            send(symbol, *args)
           end
-          send(symbol, *args)
+          self.class.set_is_morphing false
         end
       end
     end

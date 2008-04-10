@@ -27,6 +27,20 @@ describe Morph, "when writer method that didn't exist before is called with nil 
   it_should_behave_like "class without generated accessor methods added"
 end
 
+describe Morph, "when class definition contains methods and morph is included" do
+  include MorphSpecHelperMethods
+
+  after :all do
+    remove_morph_methods
+    @morphed_class.class_eval "remove_method :happy"
+  end
+
+  it 'should not return methods defined in class in morph_methods list' do
+    initialize_morph "class ExampleMorph\n include Morph\n def happy\n 'happy, joy, joy'\n end\n end"
+    morph_methods.should be_empty
+  end
+end
+
 describe Morph, "when writer method that didn't exist before is called with blank space attribute value" do
   before :each do
     remove_morph_methods
@@ -36,7 +50,6 @@ describe Morph, "when writer method that didn't exist before is called with blan
 
   it_should_behave_like "class without generated accessor methods added"
 end
-
 
 describe Morph, 'when morph method used to set attribute value' do
 
@@ -166,22 +179,36 @@ describe Morph, "when class= is called" do
     lambda { @morph.class = nil }.should raise_error(/cannot create accessor methods/)
   end
 end
-=begin
+
 describe Morph, 'when passing block to morph_method_missing' do
 
   include MorphSpecHelperMethods
   before :all do initialize_morph; end
-  after  :all do remove_morph_methods; end
+  after  :each do remove_morph_methods; end
 
   it 'should class_eval the block' do
-    @morph.morph_method_missing :noise, 'quack' do ||
-      def chunky
-        'bacon'
-      end
+    @morph.morph_method_missing :chunky, 'bacon' do |base, attribute|
+      base.class_eval "def #{attribute}; 'spinach'; end
+                       def #{attribute}=(value); value.to_s; end"
     end
+    @morph.respond_to?(:chunky).should == true
+    @morph.chunky.should == 'spinach'
+    @morphed_class.class_eval "remove_method :chunky"
+    lambda { @morph.chunky }.should raise_error
   end
+
+  it 'should class_eval the block' do
+    @morph.morph_method_missing :chunky, 'bacon' do |base, attribute|
+      base.class_def(attribute) { 'spinach' }
+    end
+    @morph.respond_to?(:chunky).should == true
+    @morph.chunky.should == 'spinach'
+    @morphed_class.class_eval "remove_method :chunky"
+    lambda { @morph.chunky }.should raise_error
+  end
+
 end
-=end
+
 describe Morph, 'when remove_morph_writers is called after a generated method has been added' do
 
   include MorphSpecHelperMethods
