@@ -1,5 +1,5 @@
 module Morph
-  VERSION = "0.1.4"
+  VERSION = "0.1.5"
 
   def self.included(base)
     base.extend ClassMethods
@@ -76,6 +76,16 @@ module Morph
         label = attributes
         attribute = label.is_a?(String) ? convert_to_morph_method_name(label) : label
         send("#{attribute}=".to_sym, value)
+      end
+    end
+
+    def morph_attributes
+      attributes = self.class.morph_methods.inject({}) do |hash, attribute|
+        unless attribute =~ /=\Z/
+          symbol = attribute.to_sym
+          hash[symbol] = send(symbol)
+        end
+        hash
       end
     end
 

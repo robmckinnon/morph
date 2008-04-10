@@ -15,6 +15,10 @@ describe Morph, "when writer method that didn't exist before is called with non-
   it 'should return assigned value when reader method called' do
     @morph.noise.should == @quack
   end
+
+  it 'should return hash of attributes when morph_attributes called' do
+    @morph.morph_attributes.should == {@attribute.to_sym => @quack}
+  end
 end
 
 describe Morph, "when writer method that didn't exist before is called with nil value" do

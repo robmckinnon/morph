@@ -12,13 +12,15 @@ Here's example code showing Morph playing with Hpricot:
    include Morph  # allows class to morph
 
    def initialize name
-     doc = Hpricot open("http://github.com/#{name}")
+     if name
+       doc = Hpricot open("http://github.com/#{name}")
 
-     (doc/'label').collect do |node|
-       label = node.inner_text
-       value = node.next_sibling.inner_text.strip
+       (doc/'label').collect do |node|
+         label = node.inner_text
+         value = node.next_sibling.inner_text.strip
 
-       morph(label, value)  # morph magic happening here!
+         morph(label, value)  # morph magic happening here!
+       end
      end
    end
  end
