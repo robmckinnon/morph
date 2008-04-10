@@ -209,31 +209,6 @@ describe Morph, 'when passing block to morph_method_missing' do
 
 end
 
-describe Morph, 'when remove_morph_writers is called after a generated method has been added' do
-
-  include MorphSpecHelperMethods
-  before :all do initialize_morph; end
-  after  :all do remove_morph_methods; end
-
-  before :each do
-    remove_morph_methods
-    @morph.noise= 'quack'
-    @attribute = 'noise'
-    @morphed_class.remove_morph_writers
-  end
-
-  it 'should remove a morph generated writer method from morph_methods list' do
-    morph_methods.include?('noise=').should == false
-    morph_methods.size.should == 1
-  end
-
-  it 'should remove a morph generated writer method from class instance_methods list' do
-    instance_methods.include?('noise=').should == false
-  end
-
-end
-
-
 describe Morph, "when converting label text to morph method name" do
 
   include MorphSpecHelperMethods

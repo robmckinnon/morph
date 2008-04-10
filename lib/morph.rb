@@ -16,13 +16,6 @@ module Morph
       @@morph_methods.keys.sort
     end
 
-    def remove_morph_writers
-      writers = morph_methods.select { |m| m =~ /=\Z/ }
-      writers.each do |writer|
-        class_eval "remove_method :#{writer}"
-      end
-    end
-
     def set_is_morphing true_or_false
       @@is_morphing = true_or_false
     end
