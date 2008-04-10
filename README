@@ -1,7 +1,6 @@
-Morph allows you to emerge class definitions via calling assignment methods.
-Mix with Hpricot for screen scrapping fun.
+Morph allows you to emerge class definitions via calling assignment methods; mix with Hpricot for screen scrapping fun.
 
-== Morph example
+== Morph example with Hpricot
 
 Here's example code showing Morph playing with Hpricot:
 
@@ -17,7 +16,7 @@ Here's example code showing Morph playing with Hpricot:
        label = node.inner_text
        value = node.next_sibling.inner_text.strip
 
-       morph(label, value) # morph magic happening here!
+       morph(label, value)  # morph magic happening here!
      end
    end
  end
@@ -59,31 +58,64 @@ So, a new company method has appeared:
 
  dhh.company #=> "37signals"
 
-
-How about adding a hash of attribute values?
-
- why.morph :drink => 'tea', :spoons_of_sugar => 2, :milk => 'prefer soya thanks'
-
- why.drink  # => "tea"
- why.spoons_of_sugar  # => 2
- why.milk  # => "prefer soya thanks"
-
-
 Time to print the nascent attribute definitions:
 
  puts Hubbit.print_morph_methods
 
  attr_accessor :blog
  attr_accessor :company
- attr_accessor :drink
  attr_accessor :email
  attr_accessor :location
- attr_accessor :milk
  attr_accessor :name
  attr_accessor :projects
- attr_accessor :spoons_of_sugar
  => nil
 
+
+
+== Morph example from Hash
+
+How about adding a hash of attribute values?
+
+ class Order; include Morph; end
+ order = Order.new
+ order.morph :drink => 'tea', :spoons_of_sugar => 2, :milk => 'prefer soya thanks'
+
+ order.drink  # => "tea"
+ order.spoons_of_sugar  # => 2
+ order.milk  # => "prefer soya thanks"
+
+
+== Morph example hijacking method creation
+
+class VegieFoxes
+  include Morph
+
+  def method_missing symbol, *args
+    is_writer = symbol.to_s =~ /=\Z/
+
+    if is_writer
+      morph_method_missing(symbol, *args) do |base, attribute|
+        base.class_eval "attr_reader :#{attribute}"
+        base.class_def("#{attribute}=") do |value|
+          value = (value == 'bacon') ? 'spinach' : value
+          instance_variable_set "@#{attribute}".to_sym, value
+        end
+      end
+      send(symbol, *args)
+    end
+  end
+end
+
+foxes = VegieFoxes.new
+
+foxes.chunky = 'bacon'
+puts foxes.inspect # => #<VegieFoxes @chunky="spinach">
+
+foxes.chunky = 'cheese'
+puts foxes.inspect # => #<VegieFoxes @chunky="cheese">
+
+
+== Last bits
 
 See examples/ directory for more example code.
 See LICENSE for the terms of this software.
