@@ -9,21 +9,15 @@ module Morph
 
   module ClassMethods
 
-    @@is_morphing = false
+    @@adding_morph_method = false
     @@morph_methods = {}
 
     def morph_methods
       @@morph_methods.keys.sort
     end
 
-    def set_is_morphing true_or_false
-      @@is_morphing = true_or_false
-    end
-
-    def convert_to_morph_method_name label
-      name = label.downcase.tr('()*',' ').gsub('%','percentage').strip.chomp(':').strip.gsub(/\s/,'_').squeeze('_')
-      name = '_'+name if name =~ /^\d/
-      name
+    def adding_morph_method= true_or_false
+      @@adding_morph_method = true_or_false
     end
 
     def class_def name, &block
@@ -32,13 +26,13 @@ module Morph
 
     protected
 
-    def method_added symbol
-      @@morph_methods[symbol.to_s] = true if @@is_morphing
-    end
+      def method_added symbol
+        @@morph_methods[symbol.to_s] = true if @@adding_morph_method
+      end
 
-    def method_removed symbol
-      @@morph_methods.delete symbol.to_s if @@morph_methods.has_key? symbol.to_s
-    end
+      def method_removed symbol
+        @@morph_methods.delete symbol.to_s if @@morph_methods.has_key? symbol.to_s
+      end
 
   end
 
@@ -80,31 +74,43 @@ module Morph
         attributes.each { |a, v| morph(a, v) }
       else
         label = attributes
-        attribute = label.is_a?(String) ? self.class.convert_to_morph_method_name(label) : label
+        attribute = label.is_a?(String) ? convert_to_morph_method_name(label) : label
         send("#{attribute}=".to_sym, value)
       end
     end
 
     protected
 
-    def morph_method_missing symbol, *args, &block
-      attribute = symbol.to_s.chomp '='
-      if Object.instance_methods.include?(attribute)
-        raise "'#{attribute}' is an instance_method on Object, cannot create accessor methods for '#{attribute}'"
-      elsif args.size > 0
-        value = args[0]
-        empty_value = (value.nil? or (value.is_a?(String) && value.strip.size == 0))
-        unless empty_value
-          self.class.set_is_morphing true
+      def morph_method_missing symbol, *args
+        attribute = symbol.to_s.chomp '='
+
+        if Object.instance_methods.include?(attribute)
+          raise "'#{attribute}' is an instance_method on Object, cannot create accessor methods for '#{attribute}'"
+        elsif argument_provided? args
+          base = self.class
+          base.adding_morph_method= true
+
           if block_given?
-            yield self.class, attribute
+            yield base, attribute
           else
-            self.class.class_eval "attr_accessor :#{attribute}"
+            base.class_eval "attr_accessor :#{attribute}"
             send(symbol, *args)
           end
-          self.class.set_is_morphing false
+          base.adding_morph_method= false
         end
       end
-    end
+
+    private
+
+      def argument_provided? args
+        args.size > 0 && !args[0].nil? && !(args[0].is_a?(String) && args[0].strip.size == 0)
+      end
+
+      def convert_to_morph_method_name label
+        name = label.downcase.tr('()*',' ').gsub('%','percentage').strip.chomp(':').strip.gsub(/\s/,'_').squeeze('_')
+        name = '_'+name if name =~ /^\d/
+        name
+      end
+
   end
 end

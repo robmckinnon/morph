@@ -29,8 +29,9 @@ module MorphSpecHelperMethods
   end
 
   def check_convert_to_morph_method_name label, method_name
-    initialize_morph_class
-    @morphed_class.convert_to_morph_method_name(label).should == method_name
+    code = 'class ExampleMorph; include Morph; def convert_to_morph_method_name label; super; end; end'
+    eval code
+    ExampleMorph.new.convert_to_morph_method_name(label).should == method_name
   end
 
   def each_attribute
