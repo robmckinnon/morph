@@ -12,28 +12,6 @@ module Morph
     @@is_morphing = false
     @@morph_methods = {}
 
-    def convert_to_morph_method_name label
-      name = label.downcase.tr('()*',' ').gsub('%','percentage').strip.chomp(':').strip.gsub(/\s/,'_').squeeze('_')
-      name = '_'+name if name =~ /^\d/
-      name
-    end
-
-    def set_is_morphing true_or_false
-      @@is_morphing = true_or_false
-    end
-
-    def method_added symbol
-      @@morph_methods[symbol.to_s] = true if @@is_morphing
-    end
-
-    def method_removed symbol
-      @@morph_methods.delete symbol.to_s if @@morph_methods.has_key? symbol.to_s
-    end
-
-    def class_def name, &block
-      class_eval { define_method name, &block }
-    end
-
     def morph_methods
       @@morph_methods.keys.sort
     end
@@ -45,21 +23,30 @@ module Morph
       end
     end
 
-    def print_morph_methods
-      methods = morph_methods
-      writers = methods.select { |m| m =~ /=\Z/ }
-      readers = methods.reject { |m| m =~ /=\Z/ }
-
-      accessors = readers.select { |m| writers.include? "#{m}=" }
-      readers =   readers.reject { |m| accessors.include? m }
-      writers =   writers.reject { |m| accessors.include? m.chomp('=') }
-
-      attributes = accessors.collect { |attribute| "attr_accessor :#{attribute}\n" }
-      attributes += readers.collect {  |attribute| "attr_reader :#{attribute}\n" }
-      attributes += writers.collect {  |attribute| "attr_writer :#{attribute}\n" }
-
-      attributes.join.chop
+    def set_is_morphing true_or_false
+      @@is_morphing = true_or_false
     end
+
+    def convert_to_morph_method_name label
+      name = label.downcase.tr('()*',' ').gsub('%','percentage').strip.chomp(':').strip.gsub(/\s/,'_').squeeze('_')
+      name = '_'+name if name =~ /^\d/
+      name
+    end
+
+    def class_def name, &block
+      class_eval { define_method name, &block }
+    end
+
+    protected
+
+    def method_added symbol
+      @@morph_methods[symbol.to_s] = true if @@is_morphing
+    end
+
+    def method_removed symbol
+      @@morph_methods.delete symbol.to_s if @@morph_methods.has_key? symbol.to_s
+    end
+
   end
 
   module MethodMissing
@@ -104,6 +91,8 @@ module Morph
         send("#{attribute}=".to_sym, value)
       end
     end
+
+    protected
 
     def morph_method_missing symbol, *args, &block
       attribute = symbol.to_s.chomp '='

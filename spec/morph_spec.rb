@@ -231,10 +231,6 @@ describe Morph, 'when remove_morph_writers is called after a generated method ha
     instance_methods.include?('noise=').should == false
   end
 
-  it 'should be able to print morph method declarations' do
-    @morphed_class.print_morph_methods.should == %Q|attr_reader :#{@attribute}|
-  end
-
 end
 
 

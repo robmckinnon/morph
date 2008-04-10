@@ -1,5 +1,7 @@
 Morph allows you to emerge class definitions via calling assignment methods; mix with Hpricot for screen scrapping fun.
 
+
+
 == Morph example with Hpricot
 
 Here's example code showing Morph playing with Hpricot:
@@ -58,18 +60,6 @@ So, a new company method has appeared:
 
  dhh.company #=> "37signals"
 
-Time to print the nascent attribute definitions:
-
- puts Hubbit.print_morph_methods
-
- attr_accessor :blog
- attr_accessor :company
- attr_accessor :email
- attr_accessor :location
- attr_accessor :name
- attr_accessor :projects
- => nil
-
 
 
 == Morph example from Hash
@@ -85,23 +75,31 @@ How about adding a hash of attribute values?
  order.milk  # => "prefer soya thanks"
 
 
+
 == Morph example hijacking method creation
 
 class VegieFoxes
   include Morph
 
   def method_missing symbol, *args
-    is_writer = symbol.to_s =~ /=\Z/
-
-    if is_writer
+    if (is_writer = symbol.to_s =~ /=\Z/)
       morph_method_missing(symbol, *args) do |base, attribute|
-        base.class_eval "attr_reader :#{attribute}"
-        base.class_def("#{attribute}=") do |value|
-          value = (value == 'bacon') ? 'spinach' : value
-          instance_variable_set "@#{attribute}".to_sym, value
-        end
+        create_accessors base, attribute
       end
       send(symbol, *args)
+    else
+      super
+    end
+  end
+
+  private
+  def create_accessors base, attribute
+    base.class_eval "attr_reader :#{attribute}"
+
+    base.class_def("#{attribute}=") do |value|
+      is_meat = %w[bacon ham].include? value
+      value = is_meat ? 'spinach' : value
+      instance_variable_set "@#{attribute}".to_sym, value
     end
   end
 end
@@ -109,15 +107,17 @@ end
 foxes = VegieFoxes.new
 
 foxes.chunky = 'bacon'
-puts foxes.inspect # => #<VegieFoxes @chunky="spinach">
+foxes.inspect # => #<VegieFoxes @chunky="spinach">
 
 foxes.chunky = 'cheese'
 puts foxes.inspect # => #<VegieFoxes @chunky="cheese">
 
+foxes.pet = 'ham'
+foxes.inspect # => #<VegieFoxes @pet="spinach", @chunky="cheese">
 
 == Last bits
 
-See examples/ directory for more example code.
+See examples/ directory for some example code.
 See LICENSE for the terms of this software.
 
  .                                                     ,

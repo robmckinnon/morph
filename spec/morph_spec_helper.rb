@@ -68,12 +68,6 @@ describe "class with generated accessor methods added", :shared => true do
     morph_methods.size.should == @expected_morph_methods_count
   end
 
-  it 'should be able to print morph method declarations' do
-    each_attribute do |a|
-      accessor = %Q|attr_accessor :#{a}|
-      @morphed_class.print_morph_methods.should include(accessor)
-    end
-  end
 end
 
 describe "class without generated accessor methods added", :shared => true do
