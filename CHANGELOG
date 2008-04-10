@@ -1,4 +1,4 @@
-v0.1.4. can pass optional block of code to dynamically add via morph
+v0.1.4. can now pass code block to customize the dynamically added methods
 
 v0.1.3. can now set hash of attributes via morph method
 

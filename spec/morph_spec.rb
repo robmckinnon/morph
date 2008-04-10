@@ -189,7 +189,6 @@ describe Morph, 'when passing block to morph_method_missing' do
   it 'should class_eval the block' do
     @morph.morph_method_missing(:chunky, 'bacon') do |base, attribute|
       base.class_eval "def #{attribute}; 'spinach'; end"
-      base.class_eval "def #{attribute}=(value); value.to_s; end"
     end
     @morph.respond_to?(:chunky).should == true
     @morph.chunky.should == 'spinach'
