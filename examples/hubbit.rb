@@ -1,4 +1,6 @@
-require 'rubygems'; require 'hpricot'; require 'open-uri'; require 'morph'
+require 'morph'
+
+require 'rubygems'; require 'hpricot'; require 'open-uri'
 
 # An example of Morph playing with Hpricot
 class Hubbit

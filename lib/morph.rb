@@ -24,6 +24,15 @@ module Morph
       class_eval { define_method name, &block }
     end
 
+    def show_ruby
+      begin
+        require 'ruby2ruby'
+        puts Ruby2Ruby.translate(self)
+      rescue LoadError
+        puts "You need to install the ruby2ruby gem before calling show_ruby"
+      end
+    end
+
     protected
 
       def method_added symbol
@@ -39,12 +48,7 @@ module Morph
   module MethodMissing
     def method_missing symbol, *args
       is_writer = symbol.to_s =~ /=\Z/
-
-      if is_writer
-        morph_method_missing symbol, *args
-      else
-        super
-      end
+      is_writer ? morph_method_missing(symbol, *args) : super
     end
   end
 
@@ -69,12 +73,11 @@ module Morph
     #   p order # -> #<Order:0x33c50c @lemon=false, @milk="yes please",
     #                @payment_type="will wash dishes", @sugars=2, @drink="tea">
     #
-    def morph attributes, value=nil
-      if attributes.is_a? Hash
-        attributes.each { |a, v| morph(a, v) }
+    def morph attributes_or_label, value=nil
+      if attributes_or_label.is_a? Hash
+        attributes_or_label.each { |a, v| morph(a, v) }
       else
-        label = attributes
-        attribute = label.is_a?(String) ? convert_to_morph_method_name(label) : label
+        attribute = convert_to_morph_method_name(attributes_or_label)
         send("#{attribute}=".to_sym, value)
       end
     end
@@ -98,7 +101,7 @@ module Morph
           raise "'#{attribute}' is an instance_method on Object, cannot create accessor methods for '#{attribute}'"
         elsif argument_provided? args
           base = self.class
-          base.adding_morph_method= true
+          base.adding_morph_method = true
 
           if block_given?
             yield base, attribute
@@ -106,7 +109,7 @@ module Morph
             base.class_eval "attr_accessor :#{attribute}"
             send(symbol, *args)
           end
-          base.adding_morph_method= false
+          base.adding_morph_method = false
         end
       end
 
@@ -117,7 +120,7 @@ module Morph
       end
 
       def convert_to_morph_method_name label
-        name = label.downcase.tr('()*',' ').gsub('%','percentage').strip.chomp(':').strip.gsub(/\s/,'_').squeeze('_')
+        name = label.to_s.downcase.tr('()*',' ').gsub('%','percentage').strip.chomp(':').strip.gsub(/\s/,'_').squeeze('_')
         name = '_'+name if name =~ /^\d/
         name
       end
