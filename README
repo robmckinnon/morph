@@ -12,15 +12,13 @@ Here's example code showing Morph playing with Hpricot:
    include Morph  # allows class to morph
 
    def initialize name
-     if name
-       doc = Hpricot open("http://github.com/#{name}")
+     doc = Hpricot open("http://github.com/#{name}")
 
-       (doc/'label').collect do |node|
-         label = node.inner_text
-         value = node.next_sibling.inner_text.strip
+     (doc/'label').collect do |node|
+       label = node.inner_text
+       value = node.next_sibling.inner_text.strip
 
-         morph(label, value)  # morph magic happening here!
-       end
+       morph(label, value)  # morph magic happening here!
      end
    end
  end
@@ -84,7 +82,7 @@ class VegieFoxes
   include Morph
 
   def method_missing symbol, *args
-    if (is_writer = symbol.to_s =~ /=\Z/)
+    if (is_writer = symbol.to_s =~ /=$/)
       morph_method_missing(symbol, *args) do |base, attribute|
         create_accessors base, attribute
       end

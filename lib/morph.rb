@@ -47,7 +47,7 @@ module Morph
 
   module MethodMissing
     def method_missing symbol, *args
-      is_writer = symbol.to_s =~ /=\Z/
+      is_writer = symbol.to_s =~ /=$/
       is_writer ? morph_method_missing(symbol, *args) : super
     end
   end
