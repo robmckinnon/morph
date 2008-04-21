@@ -1,5 +1,5 @@
 module Morph
-  VERSION = "0.1.5"
+  VERSION = "0.1.6"
 
   def self.included(base)
     base.extend ClassMethods
@@ -31,6 +31,14 @@ module Morph
       rescue LoadError
         puts "You need to install the ruby2ruby gem before calling show_ruby"
       end
+    end
+
+    def script_generate options={}
+      name = self.name.to_s.split('::').last
+      generator = options[:generator] || 'model'
+      line = ["ruby script/destroy #{generator} #{name}; ruby script/generate #{generator} #{name}"]
+      morph_methods.select{|m| not(m =~ /=$/) }.each {|attribute| line << " #{attribute}:string"}
+      line.join('')
     end
 
     protected

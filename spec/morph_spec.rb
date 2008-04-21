@@ -19,6 +19,14 @@ describe Morph, "when writer method that didn't exist before is called with non-
   it 'should return hash of attributes when morph_attributes called' do
     @morph.morph_attributes.should == {@attribute.to_sym => @quack}
   end
+
+  it 'should generate rails model generator script line' do
+    @morphed_class.script_generate.should == "ruby script/destroy model ExampleMorph; ruby script/generate model ExampleMorph noise:string"
+  end
+
+  it 'should generate rails model generator script line' do
+    @morphed_class.script_generate(:generator=>'rspec_model').should == "ruby script/destroy rspec_model ExampleMorph; ruby script/generate rspec_model ExampleMorph noise:string"
+  end
 end
 
 describe Morph, "when writer method that didn't exist before is called with nil value" do
@@ -86,6 +94,14 @@ describe Morph, 'when morph method used to set an attribute value hash' do
     @morph.drink.should == 'tea'
     @morph.sugars.should == 2
     @morph.milk.should == 'yes please'
+  end
+
+  it 'should generate rails model generator script line' do
+    @morphed_class.script_generate.should == "ruby script/destroy model ExampleMorph; ruby script/generate model ExampleMorph drink:string milk:string sugars:string"
+  end
+
+  it 'should generate rails model generator script line' do
+    @morphed_class.script_generate(:generator=>'rspec_model').should == "ruby script/destroy rspec_model ExampleMorph; ruby script/generate rspec_model ExampleMorph drink:string milk:string sugars:string"
   end
 end
 
