@@ -35,7 +35,7 @@ module Morph
 
     def script_generate options={}
       name = self.name.to_s.split('::').last
-      generator = options[:generator] || 'model'
+      generator = options[:generator] || 'rspec_model'
       line = ["ruby script/destroy #{generator} #{name}; ruby script/generate #{generator} #{name}"]
       morph_methods.select{|m| not(m =~ /=$/) }.each {|attribute| line << " #{attribute}:string"}
       line.join('')
