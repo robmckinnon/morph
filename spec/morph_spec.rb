@@ -20,6 +20,10 @@ describe Morph, "when writer method that didn't exist before is called with non-
     @morph.morph_attributes.should == {@attribute.to_sym => @quack}
   end
 
+  it 'should generate rails model generator script line, with given model name' do
+    @morphed_class.script_generate {|model_name| 'SomethingDifferent'}.should == "ruby script/destroy rspec_model SomethingDifferent; ruby script/generate rspec_model SomethingDifferent noise:string"
+  end
+
   it 'should generate rails model generator script line' do
     @morphed_class.script_generate.should == "ruby script/destroy rspec_model ExampleMorph; ruby script/generate rspec_model ExampleMorph noise:string"
   end
@@ -41,10 +45,13 @@ end
 
 describe Morph, "when different writer method called on two different morph classes" do
   include MorphSpecHelperMethods
-  it 'should have morph_method return appropriate methods for each class' do
+
+  before :each do
     initialize_morph
     initialize_another_morph
+  end
 
+  it 'should have morph_method return appropriate methods for each class' do
     @morph.every = 'where'
     @another_morph.no = 'where'
 
@@ -53,6 +60,16 @@ describe Morph, "when different writer method called on two different morph clas
 
     @morphed_class.morph_methods.should == ['every','every=']
     @another_morphed_class.morph_methods.should == ['no','no=']
+  end
+
+  it 'should convert call morph_attributes on both objects, when one object has a reference to another' do
+    @morph.every = 'which'
+    @another_morph.way = 'but'
+    @morph.loose = @another_morph
+
+    attributes = @morph.morph_attributes
+    attributes[:every].should == 'which'
+    attributes[:loose].should == {:way => 'but'}
   end
 
   after :each do

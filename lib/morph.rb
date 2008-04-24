@@ -35,6 +35,7 @@ module Morph
 
     def script_generate options={}
       name = self.name.to_s.split('::').last
+      name = yield name if block_given?
       generator = options[:generator] || 'rspec_model'
       line = ["ruby script/destroy #{generator} #{name}; ruby script/generate #{generator} #{name}"]
       morph_methods.select{|m| not(m =~ /=$/) }.each {|attribute| line << " #{attribute}:string"}
@@ -94,7 +95,9 @@ module Morph
       attributes = self.class.morph_methods.inject({}) do |hash, attribute|
         unless attribute =~ /=\Z/
           symbol = attribute.to_sym
-          hash[symbol] = send(symbol)
+          value = send(symbol)
+          value = value.morph_attributes if value.respond_to? :morph_attributes
+          hash[symbol] = value
         end
         hash
       end
