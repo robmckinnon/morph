@@ -96,7 +96,15 @@ module Morph
         unless attribute =~ /=\Z/
           symbol = attribute.to_sym
           value = send(symbol)
+
+          value.each do |key, v|
+            value[key] = v.morph_attributes if v.respond_to?(:morph_attributes)
+          end if value.is_a? Hash
+
+          value = value.collect {|v| v.respond_to?(:morph_attributes) ? v.morph_attributes : v } if value.is_a? Array
           value = value.morph_attributes if value.respond_to? :morph_attributes
+
+
           hash[symbol] = value
         end
         hash

@@ -62,7 +62,7 @@ describe Morph, "when different writer method called on two different morph clas
     @another_morphed_class.morph_methods.should == ['no','no=']
   end
 
-  it 'should convert call morph_attributes on both objects, when one object has a reference to another' do
+  it 'should call morph_attributes on both objects, when one object has a reference to another' do
     @morph.every = 'which'
     @another_morph.way = 'but'
     @morph.loose = @another_morph
@@ -70,6 +70,26 @@ describe Morph, "when different writer method called on two different morph clas
     attributes = @morph.morph_attributes
     attributes[:every].should == 'which'
     attributes[:loose].should == {:way => 'but'}
+  end
+
+  it 'should call morph_attributes on both objects, when one object has a reference to array of others' do
+    @morph.every = 'which'
+    @another_morph.way = 'but'
+    @morph.loose = [@another_morph]
+
+    attributes = @morph.morph_attributes
+    attributes[:every].should == 'which'
+    attributes[:loose].should == [{:way => 'but'}]
+  end
+
+  it 'should call morph_attributes on both objects, when one object has a reference to hash of others' do
+    @morph.every = 'which'
+    @another_morph.way = 'but'
+    @morph.loose = { :honky_tonk => @another_morph}
+
+    attributes = @morph.morph_attributes
+    attributes[:every].should == 'which'
+    attributes[:loose].should == { :honky_tonk => {:way => 'but'} }
   end
 
   after :each do
