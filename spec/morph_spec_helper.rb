@@ -8,15 +8,33 @@ module MorphSpecHelperMethods
     @morphed_class = ExampleMorph
   end
 
+  def initialize_second_morph_class code=nil
+    code = 'class AnotherMorph; include Morph; end' unless code
+    eval code
+    @another_morphed_class = AnotherMorph
+  end
+
   def initialize_morph code=nil
     initialize_morph_class code
     @original_instance_methods = @morphed_class.instance_methods
     @morph = @morphed_class.new
   end
 
+  def initialize_another_morph
+    initialize_second_morph_class
+    @more_original_instance_methods = @another_morphed_class.instance_methods
+    @another_morph = @another_morphed_class.new
+  end
+
   def remove_morph_methods
     @morphed_class.instance_methods.each do |method|
       @morphed_class.class_eval "remove_method :#{method}" unless @original_instance_methods.include?(method)
+    end
+  end
+
+  def remove_another_morph_methods
+    @another_morphed_class.instance_methods.each do |method|
+      @another_morphed_class.class_eval "remove_method :#{method}" unless @more_original_instance_methods.include?(method)
     end
   end
 

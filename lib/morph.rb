@@ -1,5 +1,5 @@
 module Morph
-  VERSION = "0.1.6"
+  VERSION = "0.2.0"
 
   def self.included(base)
     base.extend ClassMethods
@@ -9,15 +9,15 @@ module Morph
 
   module ClassMethods
 
-    @@adding_morph_method = false
-    @@morph_methods = {}
+    @@adding_morph_method = Hash.new {|hash,klass| hash[klass] = false }
+    @@morph_methods = Hash.new {|hash,klass| hash[klass] = {} }
 
     def morph_methods
-      @@morph_methods.keys.sort
+      @@morph_methods[self].keys.sort
     end
 
     def adding_morph_method= true_or_false
-      @@adding_morph_method = true_or_false
+      @@adding_morph_method[self] = true_or_false
     end
 
     def class_def name, &block
@@ -44,11 +44,11 @@ module Morph
     protected
 
       def method_added symbol
-        @@morph_methods[symbol.to_s] = true if @@adding_morph_method
+        @@morph_methods[self][symbol.to_s] = true if @@adding_morph_method[self]
       end
 
       def method_removed symbol
-        @@morph_methods.delete symbol.to_s if @@morph_methods.has_key? symbol.to_s
+        @@morph_methods[self].delete symbol.to_s if @@morph_methods[self].has_key? symbol.to_s
       end
 
   end

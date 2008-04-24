@@ -21,11 +21,11 @@ describe Morph, "when writer method that didn't exist before is called with non-
   end
 
   it 'should generate rails model generator script line' do
-    @morphed_class.script_generate.should == "ruby script/destroy model ExampleMorph; ruby script/generate model ExampleMorph noise:string"
+    @morphed_class.script_generate.should == "ruby script/destroy rspec_model ExampleMorph; ruby script/generate rspec_model ExampleMorph noise:string"
   end
 
   it 'should generate rails model generator script line' do
-    @morphed_class.script_generate(:generator=>'rspec_model').should == "ruby script/destroy rspec_model ExampleMorph; ruby script/generate rspec_model ExampleMorph noise:string"
+    @morphed_class.script_generate(:generator=>'model').should == "ruby script/destroy model ExampleMorph; ruby script/generate model ExampleMorph noise:string"
   end
 end
 
@@ -37,6 +37,28 @@ describe Morph, "when writer method that didn't exist before is called with nil 
   end
 
   it_should_behave_like "class without generated accessor methods added"
+end
+
+describe Morph, "when different writer method called on two different morph classes" do
+  include MorphSpecHelperMethods
+  it 'should have morph_method return appropriate methods for each class' do
+    initialize_morph
+    initialize_another_morph
+
+    @morph.every = 'where'
+    @another_morph.no = 'where'
+
+    @morphed_class.morph_methods.size.should == 2
+    @another_morphed_class.morph_methods.size.should == 2
+
+    @morphed_class.morph_methods.should == ['every','every=']
+    @another_morphed_class.morph_methods.should == ['no','no=']
+  end
+
+  after :each do
+    remove_morph_methods
+    remove_another_morph_methods
+  end
 end
 
 describe Morph, "when class definition contains methods and morph is included" do
@@ -97,11 +119,11 @@ describe Morph, 'when morph method used to set an attribute value hash' do
   end
 
   it 'should generate rails model generator script line' do
-    @morphed_class.script_generate.should == "ruby script/destroy model ExampleMorph; ruby script/generate model ExampleMorph drink:string milk:string sugars:string"
+    @morphed_class.script_generate.should == "ruby script/destroy rspec_model ExampleMorph; ruby script/generate rspec_model ExampleMorph drink:string milk:string sugars:string"
   end
 
   it 'should generate rails model generator script line' do
-    @morphed_class.script_generate(:generator=>'rspec_model').should == "ruby script/destroy rspec_model ExampleMorph; ruby script/generate rspec_model ExampleMorph drink:string milk:string sugars:string"
+    @morphed_class.script_generate(:generator=>'model').should == "ruby script/destroy model ExampleMorph; ruby script/generate model ExampleMorph drink:string milk:string sugars:string"
   end
 end
 
