@@ -2,7 +2,7 @@ Morph allows you to emerge class definitions via calling assignment methods; mix
 
 
 
-== Morph example with Hpricot
+== Morph playing with +Hpricot+
 
 Here's example code showing Morph playing with Hpricot:
 
@@ -36,16 +36,18 @@ What new methods do we have?
 
 Ah-ha, so we have a name attribute now:
 
- why.name #=> "why the lucky stiff"
+ why.name # => "why the lucky stiff"
 
 
 Let's add some of why's projects:
 
- why.projects = %w[shoes hacketyhack camping hoodwinkd hpricot markaby mousehole parkplace poignant sandbox]
+ why.projects = %w[shoes hacketyhack camping hoodwinkd hpricot
+                  markaby mousehole parkplace poignant sandbox]
 
 That why's a productive fellow! Note new accessor methods have been added:
 
- Hubbit.morph_methods # => ["email", "email=", "name", "name=", "projects", "projects="]
+ Hubbit.morph_methods
+ # => ["email", "email=", "name", "name=", "projects", "projects="]
 
 
 Let's do some more morphing:
@@ -54,66 +56,71 @@ Let's do some more morphing:
 
 Do we have more methods now?
 
- Hubbit.morph_methods # => ["blog", "blog=", "company", "company=", "email", "email=", "location", "location=" "name", "name=", "projects", "projects="]
+ Hubbit.morph_methods
+ # => ["blog", "blog=", "company", "company=", "email", "email=",
+ #    "location", "location=" "name", "name=", "projects", "projects="]
 
 So, a new company method has appeared:
 
  dhh.company #=> "37signals"
 
 
+== Morph making sample Active Record line via +script_generate+
 
-== Morph example from Hash
+Time to generate an Active Record model? Get a sample script line like this:
 
-How about adding a hash of attribute values?
+ Hubbit.script_generate
+ # => "ruby script/destroy rspec_model Hubbit;
+ #    ruby script/generate rspec_model Hubbit blog:string company:string
+ #        email:string location:string name:string projects:string"
+
+or specify the generator:
+
+ Hubbit.script_generate :generator => 'model'
+ # => "ruby script/destroy model Hubbit;
+ #     ruby script/generate model Hubbit blog:string company:string
+ #         email:string location:string name:string projects:string"
+
+You'll have to edit this as it currently sets all data types to be string, and
+doesn't understand associations.
+
+
+== Morph setting hash of attributes via +morph+
 
  class Order; include Morph; end
  order = Order.new
+
+How about adding a hash of attribute values?
+
  order.morph :drink => 'tea', :spoons_of_sugar => 2, :milk => 'prefer soya thanks'
+
+Looks like we got 'em:
 
  order.drink  # => "tea"
  order.spoons_of_sugar  # => 2
  order.milk  # => "prefer soya thanks"
 
 
+== Morph obtaining hash of attributes via +morph_attributes+
 
-== Morph example hijacking method creation
+Create an item:
 
-class VegieFoxes
-  include Morph
+ class Item; include Morph; end
+ item = Item.new
+ item.morph :name => 'spinach', :cost => 0.50
 
-  def method_missing symbol, *args
-    if (is_writer = symbol.to_s =~ /=$/)
-      morph_method_missing(symbol, *args) do |base, attribute|
-        create_accessors base, attribute
-      end
-      send(symbol, *args)
-    else
-      super
-    end
-  end
+Now an order:
 
-  private
-  def create_accessors base, attribute
-    base.class_eval "attr_reader :#{attribute}"
+ class Order; include Morph; end
+ order = Order.new
+ order.no = 123
+ order.items = [item]
 
-    base.class_def("#{attribute}=") do |value|
-      is_meat = %w[bacon ham].include? value
-      value = is_meat ? 'spinach' : value
-      instance_variable_set "@#{attribute}".to_sym, value
-    end
-  end
-end
+Want to retrieve all that as a nested hash of values? No problem:
 
-foxes = VegieFoxes.new
+ order.morph_attributes
+ # => {:items=>[{:name=>"spinach", :cost=>0.5}], :no=>123}
 
-foxes.chunky = 'bacon'
-foxes.inspect # => #<VegieFoxes @chunky="spinach">
-
-foxes.chunky = 'cheese'
-puts foxes.inspect # => #<VegieFoxes @chunky="cheese">
-
-foxes.pet = 'ham'
-foxes.inspect # => #<VegieFoxes @pet="spinach", @chunky="cheese">
 
 == Last bits
 
