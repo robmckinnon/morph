@@ -1,6 +1,6 @@
 require 'rubygems'; require 'hpricot'; require 'open-uri'; require 'morph'; require 'mofo'; require 'cgi'
 
-# An example of Morph playing with Hpricot & Mofo using Google Search as a gateway 
+# An example of Morph playing with Hpricot & Mofo using Google Search as a gateway
 #
 #==How it works
 #
@@ -13,7 +13,7 @@ class WWR
   include Morph
 
   @@content = {}
-  
+
   def initialize(name)
     begin
       url = "http://www.google.co.uk/search?hl=en&q=site%3Aworkingwithrails.com%2Fperson+%22#{CGI.escape(name)}%22+&btnI=745"
@@ -33,8 +33,8 @@ class WWR
       morph('location',hcard.adr.locality)
       morph('for_hire',(true & doc.at('a[text() = "Available for hire"]')) )
       morph('authorities',(doc/"ul.authority li.tick").collect{|d| d.inner_text} )
-      morph('popularity', doc.at('h3[text() = "Authority"]').next_sibling.next_sibling.inner_text.to_f)
-      morph('authority', doc.at('h3[text() = "Popularity"]').next_sibling.next_sibling.inner_text.to_f)
+      morph('popularity', doc.at('h3[text() = "Popularity"]').next_sibling.next_sibling.inner_text.to_f)
+      morph('authority', doc.at('h3[text() = "Authority"]').next_sibling.next_sibling.inner_text.to_f)
 
       exp =  doc.at('h3[text() = "Experience"]').next_sibling.inner_text.split("\t").collect{|d| d.strip.chomp}
       morph('rails_experience',  exp.collect{|d| $1 if d =~ /Using Rails for(.*)/}.to_s.strip )
@@ -49,7 +49,7 @@ end
 def WWR(name)
   WWR.new(name)
 end
-# 
+#
 #  rob = WWR "Rob McKinnon"
 #  rob.location
 #   => "London"
