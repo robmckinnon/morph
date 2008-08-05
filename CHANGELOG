@@ -1,4 +1,4 @@
-v0.2.1. allow addition of unicode method names
+v0.2.1. better accomodation of unicode method names
 
 v0.2.0. added script_generate method; fixed bug occurring when two morph classes exist
 

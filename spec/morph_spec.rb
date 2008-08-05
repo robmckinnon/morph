@@ -186,6 +186,27 @@ describe Morph do
     end
   end
 
+  describe "when morph method used to set japanese and latin unicode attribute name with a value" do
+    before :each do
+      $KCODE = "u"
+      remove_morph_methods
+      @age = 19
+      @attribute = "ページビュー_graph"
+      @morph.morph(@attribute, @age)
+      @expected_morph_methods_count = 2
+    end
+
+    after :all do
+      $KCODE = "NONE"
+    end
+
+    it_should_behave_like "class with generated accessor methods added"
+
+    it 'should return assigned value when reader method called' do
+      @morph.send(@attribute.to_sym) == @age
+    end
+  end
+
   describe 'when morph method used to set blank space attribute value' do
     before :each do
       remove_morph_methods

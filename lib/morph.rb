@@ -111,24 +111,25 @@ module Morph
       end
     end
 
-      def morph_method_missing symbol, *args
-        attribute = symbol.to_s.chomp '='
+    def morph_method_missing symbol, *args
+      attribute = symbol.to_s.chomp '='
 
-        if Object.instance_methods.include?(attribute)
-          raise "'#{attribute}' is an instance_method on Object, cannot create accessor methods for '#{attribute}'"
-        elsif argument_provided? args
-          base = self.class
-          base.adding_morph_method = true
+      if Object.instance_methods.include?(attribute)
+        raise "'#{attribute}' is an instance_method on Object, cannot create accessor methods for '#{attribute}'"
+      elsif argument_provided? args
+        base = self.class
+        base.adding_morph_method = true
 
-          if block_given?
-            yield base, attribute
-          else
-            base.class_eval "attr_accessor :#{attribute}"
-            send(symbol, *args)
-          end
-          base.adding_morph_method = false
+        if block_given?
+          yield base, attribute
+        else
+          # base.class_eval "attr_accessor :#{attribute}"
+          base.class_eval "def #{attribute}; @#{attribute}; end; def #{attribute}=(value); @#{attribute} = value; end"
+          send(symbol, *args)
         end
+        base.adding_morph_method = false
       end
+    end
 
     private
 
@@ -141,6 +142,5 @@ module Morph
         name = '_'+name if name =~ /^\d/
         name
       end
-
   end
 end
