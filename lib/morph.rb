@@ -1,5 +1,5 @@
 module Morph
-  VERSION = "0.2.0"
+  VERSION = "0.2.1"
 
   def self.included(base)
     base.extend ClassMethods
@@ -110,8 +110,6 @@ module Morph
         hash
       end
     end
-
-    protected
 
       def morph_method_missing symbol, *args
         attribute = symbol.to_s.chomp '='
