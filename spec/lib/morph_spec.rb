@@ -392,17 +392,17 @@ describe Morph do
           "CompanyNumber"=>"03176906",
           "xmlns"=>"http://xmlgw.companieshouse.gov.uk/v1-0"}
       }
-      object = Morph.from_hash(h)
-      object.class.name.should == 'CompanyDetail'
-      object.class.morph_methods.include?('last_full_mem_date').should be_true
-      object.class.morph_methods.include?('account').should be_true
+      company_details = Morph.from_hash(h)
+      company_details.class.name.should == 'CompanyDetails'
+      company_details.class.morph_methods.include?('last_full_mem_date').should be_true
+      company_details.class.morph_methods.include?('accounts').should be_true
 
-      object.account.class.name.should == 'Account'
-      object.account.overdue.should == 'NO'
-      object.last_full_mem_date.should == "2002-03-25"
-      object.sic_code.sic_text.should == 'stadiums'
-      object.reg_address.address_line.should == ["ST DAVID'S HOUSE", "WEST WING", "WOOD STREET", "CARDIFF CF10 1ES"]
-      puts object.to_yaml
+      company_details.accounts.class.name.should == 'Accounts'
+      company_details.accounts.overdue.should == 'NO'
+      company_details.last_full_mem_date.should == "2002-03-25"
+      company_details.sic_codes.sic_text.should == 'stadiums'
+      company_details.reg_address.address_lines.should == ["ST DAVID'S HOUSE", "WEST WING", "WOOD STREET", "CARDIFF CF10 1ES"]
+      puts company_details.to_yaml
     end
   end
 end

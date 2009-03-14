@@ -5,7 +5,7 @@ module Morph
 
   def self.object_from_key key
     begin
-      name = key.to_s.singularize
+      name = key.to_s
       type = name.constantize
     rescue NameError => e
       Object.const_set name, Class.new
@@ -18,11 +18,12 @@ module Morph
   def self.add_to_object object, attributes
     attributes.each do |key, value|
       attribute = key.gsub(':',' ')
-      attribute = attribute.tableize.singularize
+      attribute = attribute.underscore
 
-      if value.is_a?(String) || value.is_a?(Array)
+      if value.is_a?(String)
         object.morph(attribute, value)
-
+      elsif value.is_a?(Array)
+        object.morph(attribute.pluralize, value)
       elsif value.is_a? Hash
         child_object = object_from_key key
         add_to_object child_object, value
