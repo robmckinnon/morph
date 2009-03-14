@@ -1,5 +1,5 @@
-require File.dirname(__FILE__) + '/../lib/morph'
-require File.dirname(__FILE__) + '/morph_spec_helper'
+require File.dirname(__FILE__) + '/../../lib/morph'
+require File.dirname(__FILE__) + '/../morph_spec_helper'
 
 describe Morph do
   describe "when writer method that didn't exist before is called with non-nil value" do
@@ -348,6 +348,61 @@ describe Morph do
     end
     it 'should handle unicode name' do
       check_convert_to_morph_method_name '年龄', '年龄'
+    end
+  end
+
+  describe 'creating from hash' do
+    it 'should create classes and object instances' do
+      h = {
+        "CompanyDetails"=> {
+          "RegAddress"=> {
+              "AddressLine"=>["ST DAVID'S HOUSE", "WEST WING", "WOOD STREET", "CARDIFF CF10 1ES"]},
+          "LastFullMemDate"=>"2002-03-25",
+          "xsi:schemaLocation"=>"xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.xsd",
+          "HasBranchInfo"=>"0",
+          "Mortgages"=> {
+              "NumMortSatisfied"=>"0",
+              "MortgageInd"=>"LT300",
+              "NumMortOutstanding"=>"7",
+              "NumMortPartSatisfied"=>"0",
+              "NumMortCharges"=>"7"},
+          "CompanyCategory"=>"Public Limited Company",
+          "HasAppointments"=>"1",
+          "SICCodes"=> {
+              "SicText"=>"stadiums"},
+          "Returns"=> {
+              "Overdue"=>"NO",
+              "DocumentAvailable"=>"1",
+              "NextDueDate"=>"2003-04-22",
+              "LastMadeUpDate"=>"2002-03-25"
+           },
+          "CountryOfOrigin"=>"United Kingdom",
+          "CompanyStatus"=>"Active",
+          "CompanyName"=>"MILLENNIUM STADIUM PLC",
+          "InLiquidation"=>"0",
+          "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance",
+          "Accounts"=>{
+              "Overdue"=>"NO",
+              "DocumentAvailable"=>"1",
+              "AccountCategory"=>"FULL",
+              "NextDueDate"=>"2002-11-30",
+              "LastMadeUpDate"=>"2001-04-30",
+              "AccountRefDate"=>"0000-30-04"},
+          "IncorporationDate"=>"1996-03-25",
+          "CompanyNumber"=>"03176906",
+          "xmlns"=>"http://xmlgw.companieshouse.gov.uk/v1-0"}
+      }
+      object = Morph.from_hash(h)
+      object.class.name.should == 'CompanyDetail'
+      object.class.morph_methods.include?('last_full_mem_date').should be_true
+      object.class.morph_methods.include?('account').should be_true
+
+      object.account.class.name.should == 'Account'
+      object.account.overdue.should == 'NO'
+      object.last_full_mem_date.should == "2002-03-25"
+      object.sic_code.sic_text.should == 'stadiums'
+      object.reg_address.address_line.should == ["ST DAVID'S HOUSE", "WEST WING", "WOOD STREET", "CARDIFF CF10 1ES"]
+      puts object.to_yaml
     end
   end
 end

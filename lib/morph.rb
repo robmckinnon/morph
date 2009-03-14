@@ -1,5 +1,49 @@
+require 'activesupport'
+
 module Morph
-  VERSION = "0.2.1"
+  VERSION = "0.2.3"
+
+  def self.object_from_key key
+    begin
+      name = key.to_s.singularize
+      type = name.constantize
+    rescue NameError => e
+      Object.const_set name, Class.new
+      type = name.constantize
+      type.send(:include, Morph)
+    end
+    object = type.new
+  end
+
+  def self.add_to_object object, attributes
+    attributes.each do |key, value|
+      attribute = key.gsub(':',' ')
+      attribute = attribute.tableize.singularize
+
+      if value.is_a?(String) || value.is_a?(Array)
+        object.morph(attribute, value)
+
+      elsif value.is_a? Hash
+        child_object = object_from_key key
+        add_to_object child_object, value
+        object.morph(attribute, child_object)
+      end
+    end
+  end
+
+  def self.from_hash hash
+    if hash.keys.size == 1
+      key = hash.keys.first
+      object = object_from_key key
+      if hash[key].is_a? Hash
+        attributes = hash[key]
+        add_to_object object, attributes
+      end
+      object
+    else
+      raise 'hash must have single key'
+    end
+  end
 
   def self.included(base)
     base.extend ClassMethods

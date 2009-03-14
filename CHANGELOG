@@ -1,3 +1,7 @@
+v0.2.3. added Morph.from_hash method
+
+v0.2.2. changed rubygem requirement to be >= 1.2 instead of = 1.2
+
 v0.2.1. better accomodation of unicode method names
 
 v0.2.0. added script_generate method; fixed bug occurring when two morph classes exist
