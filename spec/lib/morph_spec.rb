@@ -390,19 +390,36 @@ describe Morph do
               "AccountRefDate"=>"0000-30-04"},
           "IncorporationDate"=>"1996-03-25",
           "CompanyNumber"=>"03176906",
-          "xmlns"=>"http://xmlgw.companieshouse.gov.uk/v1-0"}
+          "xmlns"=>"http://xmlgw.companieshouse.gov.uk/v1-0",
+          "SearchItems"=> [
+            { "CompanyDate"=> '',
+              "CompanyIndexStatus"=> '',
+              "DataSet"=>"LIVE",
+              "CompanyName"=>"CANONGROVE LIMITED",
+              "CompanyNumber"=>"SC244777" },
+            { "CompanyDate"=>"",
+              "CompanyIndexStatus"=>"",
+              "DataSet"=>"LIVE",
+              "CompanyName"=>"CANONHALL ACCOUNTANCY LTD",
+              "CompanyNumber"=>"05110715" }
+          ]
+        }
       }
       company_details = Morph.from_hash(h)
-      company_details.class.name.should == 'CompanyDetails'
+      company_details.class.name.should == 'Morph::CompanyDetails'
       company_details.class.morph_methods.include?('last_full_mem_date').should be_true
       company_details.class.morph_methods.include?('accounts').should be_true
 
-      company_details.accounts.class.name.should == 'Accounts'
+      company_details.accounts.class.name.should == 'Morph::Accounts'
       company_details.accounts.overdue.should == 'NO'
       company_details.last_full_mem_date.should == "2002-03-25"
       company_details.sic_codes.sic_text.should == 'stadiums'
       company_details.reg_address.address_lines.should == ["ST DAVID'S HOUSE", "WEST WING", "WOOD STREET", "CARDIFF CF10 1ES"]
-      puts company_details.to_yaml
+
+      company_details.search_items.first.class.name.should == 'Morph::SearchItem'
+      company_details.search_items.first.data_set.should == 'LIVE'
+      company_details.search_items.first.company_name.should == 'CANONGROVE LIMITED'
+      # puts company_details.to_yaml
     end
   end
 end

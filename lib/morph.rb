@@ -1,15 +1,15 @@
 require 'activesupport'
 
 module Morph
-  VERSION = "0.2.3"
+  VERSION = "0.2.4"
 
   def self.object_from_key key
     begin
       name = key.to_s
-      type = name.constantize
+      type = "Morph::#{name}".constantize
     rescue NameError => e
-      Object.const_set name, Class.new
-      type = name.constantize
+      Morph.const_set name, Class.new
+      type = "Morph::#{name}".constantize
       type.send(:include, Morph)
     end
     object = type.new
@@ -23,7 +23,16 @@ module Morph
       if value.is_a?(String)
         object.morph(attribute, value)
       elsif value.is_a?(Array)
-        object.morph(attribute.pluralize, value)
+        array = value
+        if array.size > 0 && array.collect(&:class).uniq == [Hash]
+          array = array.collect do |hash|
+            child = object_from_key key.singularize
+            add_to_object child, hash
+            child
+          end
+        end
+
+        object.morph(attribute.pluralize, array)
       elsif value.is_a? Hash
         child_object = object_from_key key
         add_to_object child_object, value

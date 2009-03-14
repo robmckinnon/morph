@@ -1,3 +1,5 @@
+v0.2.4. from_hash() creates classes in Morph namespace and handles arrays of hashes
+
 v0.2.3. added Morph.from_hash method
 
 v0.2.2. changed rubygem requirement to be >= 1.2 instead of = 1.2
