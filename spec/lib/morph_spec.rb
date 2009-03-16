@@ -405,18 +405,21 @@ describe Morph do
           ]
         }
       }
-      company_details = Morph.from_hash(h)
-      company_details.class.name.should == 'Morph::CompanyDetails'
+      Object.const_set 'Company', Module.new
+      Company.const_set 'House', Module.new
+
+      company_details = Morph.from_hash(h, Company::House)
+      company_details.class.name.should == 'Company::House::CompanyDetails'
       company_details.class.morph_methods.include?('last_full_mem_date').should be_true
       company_details.class.morph_methods.include?('accounts').should be_true
 
-      company_details.accounts.class.name.should == 'Morph::Accounts'
+      company_details.accounts.class.name.should == 'Company::House::Accounts'
       company_details.accounts.overdue.should == 'NO'
       company_details.last_full_mem_date.should == "2002-03-25"
       company_details.sic_codes.sic_text.should == 'stadiums'
       company_details.reg_address.address_lines.should == ["ST DAVID'S HOUSE", "WEST WING", "WOOD STREET", "CARDIFF CF10 1ES"]
 
-      company_details.search_items.first.class.name.should == 'Morph::SearchItem'
+      company_details.search_items.first.class.name.should == 'Company::House::SearchItem'
       company_details.search_items.first.data_set.should == 'LIVE'
       company_details.search_items.first.company_name.should == 'CANONGROVE LIMITED'
       # puts company_details.to_yaml

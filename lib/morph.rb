@@ -3,51 +3,13 @@ require 'activesupport'
 module Morph
   VERSION = "0.2.4"
 
-  def self.object_from_key key
-    begin
-      name = key.to_s
-      type = "Morph::#{name}".constantize
-    rescue NameError => e
-      Morph.const_set name, Class.new
-      type = "Morph::#{name}".constantize
-      type.send(:include, Morph)
-    end
-    object = type.new
-  end
-
-  def self.add_to_object object, attributes
-    attributes.each do |key, value|
-      attribute = key.gsub(':',' ')
-      attribute = attribute.underscore
-
-      if value.is_a?(String)
-        object.morph(attribute, value)
-      elsif value.is_a?(Array)
-        array = value
-        if array.size > 0 && array.collect(&:class).uniq == [Hash]
-          array = array.collect do |hash|
-            child = object_from_key key.singularize
-            add_to_object child, hash
-            child
-          end
-        end
-
-        object.morph(attribute.pluralize, array)
-      elsif value.is_a? Hash
-        child_object = object_from_key key
-        add_to_object child_object, value
-        object.morph(attribute, child_object)
-      end
-    end
-  end
-
-  def self.from_hash hash
+  def self.from_hash hash, namespace=Morph
     if hash.keys.size == 1
       key = hash.keys.first
-      object = object_from_key key
+      object = object_from_key key, namespace
       if hash[key].is_a? Hash
         attributes = hash[key]
-        add_to_object object, attributes
+        add_to_object object, attributes, namespace
       end
       object
     else
@@ -60,6 +22,47 @@ module Morph
     base.send(:include, InstanceMethods)
     base.send(:include, MethodMissing)
   end
+
+  private
+    def self.object_from_key key, namespace
+      begin
+        name = key.to_s
+        type = "#{namespace.name}::#{name}".constantize
+      rescue NameError => e
+        namespace.const_set name, Class.new
+        type = "#{namespace.name}::#{name}".constantize
+        type.send(:include, Morph)
+      end
+      object = type.new
+    end
+
+    def self.add_to_object object, attributes, namespace
+      attributes.each do |key, value|
+        attribute = key.gsub(':',' ')
+        attribute = attribute.underscore
+
+        if value.is_a?(String)
+          object.morph(attribute, value)
+        elsif value.is_a?(Array)
+          array = value
+          if array.size > 0 && array.collect(&:class).uniq == [Hash]
+            array = array.collect do |hash|
+              child = object_from_key key.singularize, namespace
+              add_to_object child, hash, namespace
+              child
+            end
+          end
+
+          object.morph(attribute.pluralize, array)
+        elsif value.is_a? Hash
+          child_object = object_from_key key, namespace
+          add_to_object child_object, value, namespace
+          object.morph(attribute, child_object)
+        end
+      end
+    end
+
+  public
 
   module ClassMethods
 
