@@ -1,7 +1,7 @@
 require 'activesupport'
 
 module Morph
-  VERSION = "0.2.4"
+  VERSION = "0.2.5"
 
   def self.from_hash hash, namespace=Morph
     if hash.keys.size == 1
@@ -26,7 +26,7 @@ module Morph
   private
     def self.object_from_key key, namespace
       begin
-        name = key.to_s
+        name = key.to_s.camelize
         type = "#{namespace.name}::#{name}".constantize
       rescue NameError => e
         namespace.const_set name, Class.new
