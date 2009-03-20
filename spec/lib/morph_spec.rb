@@ -422,7 +422,49 @@ describe Morph do
       company_details.search_items.first.class.name.should == 'Company::House::SearchItem'
       company_details.search_items.first.data_set.should == 'LIVE'
       company_details.search_items.first.company_name.should == 'CANONGROVE LIMITED'
-      # puts company_details.to_yaml
+
+      # list = Morph.generate_migrations company_details
+      # list.first.should == './script/generate model company_details'
+      yaml = %Q|--- !ruby/object:Company::House::CompanyDetails
+accounts: !ruby/object:Company::House::Accounts
+  account_category: FULL
+  account_ref_date: "0000-30-04"
+  document_available: "1"
+  last_made_up_date: "2001-04-30"
+  next_due_date: "2002-11-30"
+  overdue: "NO"
+company_category: Public Limited Company
+company_name: MILLENNIUM STADIUM PLC
+company_number: 03176906
+company_status: Active
+country_of_origin: United Kingdom
+has_appointments: "1"
+has_branch_info: "0"
+in_liquidation: "0"
+incorporation_date: "1996-03-25"
+last_full_mem_date: "2002-03-25"
+mortgages: !ruby/object:Company::House::Mortgages
+  mortgage_ind: LT300
+  num_mort_charges: "7"
+  num_mort_outstanding: "7"
+  num_mort_part_satisfied: "0"
+  num_mort_satisfied: "0"
+reg_address: !ruby/object:Company::House::RegAddress
+  address_lines:
+  - ST DAVID'S HOUSE
+  - WEST WING
+  - WOOD STREET
+  - CARDIFF CF10 1ES
+returns: !ruby/object:Company::House::Returns
+  document_available: "1"
+  last_made_up_date: "2002-03-25"
+  next_due_date: "2003-04-22"
+  overdue: "NO"
+sic_codes: !ruby/object:Company::House::SICCodes
+  sic_text: stadiums
+xmlns: http://xmlgw.companieshouse.gov.uk/v1-0
+xmlns_xsi: http://www.w3.org/2001/XMLSchema-instance
+xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.xsd|
     end
   end
 end

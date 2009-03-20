@@ -3,64 +3,75 @@ require 'activesupport'
 module Morph
   VERSION = "0.2.5"
 
-  def self.from_hash hash, namespace=Morph
-    if hash.keys.size == 1
-      key = hash.keys.first
-      object = object_from_key key, namespace
-      if hash[key].is_a? Hash
-        attributes = hash[key]
-        add_to_object object, attributes, namespace
+  class << self
+    def from_hash hash, namespace=Morph
+      if hash.keys.size == 1
+        key = hash.keys.first
+        object = object_from_name key, namespace
+        if hash[key].is_a? Hash
+          attributes = hash[key]
+          add_to_object object, attributes, namespace
+        end
+        object
+      else
+        raise 'hash must have single key'
       end
-      object
-    else
-      raise 'hash must have single key'
-    end
-  end
-
-  def self.included(base)
-    base.extend ClassMethods
-    base.send(:include, InstanceMethods)
-    base.send(:include, MethodMissing)
-  end
-
-  private
-    def self.object_from_key key, namespace
-      begin
-        name = key.to_s.camelize
-        type = "#{namespace.name}::#{name}".constantize
-      rescue NameError => e
-        namespace.const_set name, Class.new
-        type = "#{namespace.name}::#{name}".constantize
-        type.send(:include, Morph)
-      end
-      object = type.new
     end
 
-    def self.add_to_object object, attributes, namespace
-      attributes.each do |key, value|
-        attribute = key.gsub(':',' ')
-        attribute = attribute.underscore
+    def included(base)
+      base.extend ClassMethods
+      base.send(:include, InstanceMethods)
+      base.send(:include, MethodMissing)
+    end
 
-        if value.is_a?(String)
-          object.morph(attribute, value)
-        elsif value.is_a?(Array)
-          array = value
-          if array.size > 0 && array.collect(&:class).uniq == [Hash]
-            array = array.collect do |hash|
-              child = object_from_key key.singularize, namespace
-              add_to_object child, hash, namespace
-              child
-            end
-          end
+    private
 
-          object.morph(attribute.pluralize, array)
-        elsif value.is_a? Hash
-          child_object = object_from_key key, namespace
-          add_to_object child_object, value, namespace
-          object.morph(attribute, child_object)
+      def class_constant namespace, name
+        "#{namespace.name}::#{name}".constantize
+      end
+
+      def object_from_name name, namespace
+        name = name.to_s.camelize
+        begin
+          type = class_constant namespace, name
+        rescue NameError => e
+          namespace.const_set name, Class.new
+          type = class_constant namespace, name
+          type.send(:include, Morph)
+        end
+        type.new
+      end
+
+      def object_from_hash hash, name, namespace
+        object = object_from_name(name, namespace)
+        add_to_object(object, hash, namespace)
+      end
+
+      def objects_from_array array, name, namespace
+        if array.size > 0 && array.collect(&:class).uniq == [Hash]
+          array.map! { |hash| object_from_hash(hash, name.singularize, namespace) }
+        else
+          array
         end
       end
-    end
+
+      def add_to_object object, attributes, namespace
+        attributes.each do |name, value|
+          attribute = name.gsub(':',' ').underscore
+          case value
+            when String
+              object.morph(attribute, value)
+            when Array
+              object.morph(attribute.pluralize, objects_from_array(value, name, namespace))
+            when Hash
+              object.morph(attribute, object_from_hash(value, name, namespace))
+            else
+              raise "cannot handle adding value of class: #{value.class.name}"
+          end
+        end
+        object
+      end
+  end
 
   public
 
