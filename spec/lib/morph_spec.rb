@@ -352,6 +352,29 @@ describe Morph do
   end
 
   describe 'creating from hash' do
+    it 'should create classes and object instances with array of hashes' do
+      h = {
+        "CompanyDetails"=> {
+          "SearchItems"=> [
+            { "CompanyDate"=> '',
+              "CompanyIndexStatus"=> '',
+              "DataSet"=>"LIVE",
+              "CompanyName"=>"CANONGROVE LIMITED",
+              "CompanyNumber"=>"SC244777" },
+            { "CompanyDate"=>"",
+              "CompanyIndexStatus"=>"",
+              "DataSet"=>"LIVE",
+              "CompanyName"=>"CANONHALL ACCOUNTANCY LTD",
+              "CompanyNumber"=>"05110715" }
+          ]
+        }
+      }
+      company_details = Morph.from_hash(h)
+      company_details.search_items.first.class.name.should == 'Morph::SearchItem'
+      company_details.search_items.first.data_set.should == 'LIVE'
+      company_details.search_items.first.company_name.should == 'CANONGROVE LIMITED'
+    end
+
     it 'should create classes and object instances' do
       h = {
         "CompanyDetails"=> {
@@ -390,19 +413,7 @@ describe Morph do
               "AccountRefDate"=>"0000-30-04"},
           "IncorporationDate"=>"1996-03-25",
           "CompanyNumber"=>"03176906",
-          "xmlns"=>"http://xmlgw.companieshouse.gov.uk/v1-0",
-          "SearchItems"=> [
-            { "CompanyDate"=> '',
-              "CompanyIndexStatus"=> '',
-              "DataSet"=>"LIVE",
-              "CompanyName"=>"CANONGROVE LIMITED",
-              "CompanyNumber"=>"SC244777" },
-            { "CompanyDate"=>"",
-              "CompanyIndexStatus"=>"",
-              "DataSet"=>"LIVE",
-              "CompanyName"=>"CANONHALL ACCOUNTANCY LTD",
-              "CompanyNumber"=>"05110715" }
-          ]
+          "xmlns"=>"http://xmlgw.companieshouse.gov.uk/v1-0"
         }
       }
       Object.const_set 'Company', Module.new
@@ -419,12 +430,16 @@ describe Morph do
       company_details.sic_codes.sic_text.should == 'stadiums'
       company_details.reg_address.address_lines.should == ["ST DAVID'S HOUSE", "WEST WING", "WOOD STREET", "CARDIFF CF10 1ES"]
 
-      company_details.search_items.first.class.name.should == 'Company::House::SearchItem'
-      company_details.search_items.first.data_set.should == 'LIVE'
-      company_details.search_items.first.company_name.should == 'CANONGROVE LIMITED'
+      list = Morph.generate_migrations company_details, :ignore=>['xmlns','xmlns_xsi','xsi_schema_location']
+      list.size.should == 7
+      list[0].should == "./script/generate model company_details company_category:string company_name:string company_number:string company_status:string country_of_origin:string has_appointments:string has_branch_info:string in_liquidation:string incorporation_date:date last_full_mem_date:date"
+      list[1].should == './script/generate model accounts company_details_id:integer account_category:string account_ref_date:date document_available:string last_made_up_date:date next_due_date:date overdue:string'
+      list[2].should == './script/generate model mortgages company_details_id:integer mortgage_ind:string num_mort_charges:string num_mort_outstanding:string num_mort_part_satisfied:string num_mort_satisfied:string'
+      list[3].should == './script/generate model reg_address company_details_id:integer'
+      list[4].should == './script/generate model address_lines reg_address_id:integer'
+      list[5].should == './script/generate model returns company_details_id:integer document_available:string last_made_up_date:date next_due_date:date overdue:string'
+      list[6].should == './script/generate model sic_codes company_details_id:integer sic_text:string'
 
-      # list = Morph.generate_migrations company_details
-      # list.first.should == './script/generate model company_details'
       yaml = %Q|--- !ruby/object:Company::House::CompanyDetails
 accounts: !ruby/object:Company::House::Accounts
   account_category: FULL

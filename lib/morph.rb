@@ -4,6 +4,14 @@ module Morph
   VERSION = "0.2.5"
 
   class << self
+    def generate_migrations object, options={}
+      options[:ignore] ||= []
+      options[:belongs_to_id] ||= ''
+      migrations = []
+      name = object.class.name.demodulize.underscore
+      add_migration name, object.morph_attributes, migrations, options
+    end
+
     def from_hash hash, namespace=Morph
       if hash.keys.size == 1
         key = hash.keys.first
@@ -25,6 +33,31 @@ module Morph
     end
 
     private
+      def add_migration name, attributes, migrations, options
+        migration = "./script/generate model #{name}#{options[:belongs_to_id]}"
+        options[:belongs_to_id] = ''
+        migrations << migration
+        attributes.to_a.sort{|a,b| a[0].to_s <=> b[0].to_s}.each do |attribute, value|
+          case value
+            when String
+              attribute_name = attribute.to_s
+              unless options[:ignore].include?(attribute_name)
+                type = attribute_name.ends_with?('date') ? 'date' : 'string'
+                attribute_def = "#{attribute}:#{type}"
+                migration.sub!(migration, "#{migration} #{attribute_def}")
+              end
+            when Array
+              options[:belongs_to_id] = " #{name}_id:integer"
+              migrations = add_migration(attribute, '', migrations, options)
+            when Hash
+              options[:belongs_to_id] = " #{name}_id:integer"
+              migrations = add_migration(attribute, value, migrations, options)
+            else
+              puts 'hi'
+          end
+        end
+        migrations
+      end
 
       def class_constant namespace, name
         "#{namespace.name}::#{name}".constantize
