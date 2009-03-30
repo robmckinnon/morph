@@ -1,3 +1,5 @@
+v0.2.6. handle more types of value types in from_hash()
+
 v0.2.5. camelize names for classes in from_hash()
 
 v0.2.4. from_hash() creates classes in Morph namespace and handles arrays of hashes

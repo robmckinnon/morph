@@ -1,7 +1,7 @@
 require 'activesupport'
 
 module Morph
-  VERSION = "0.2.5"
+  VERSION = "0.2.6"
 
   class << self
     def generate_migrations object, options={}
@@ -92,14 +92,16 @@ module Morph
         attributes.each do |name, value|
           attribute = name.gsub(':',' ').underscore
           case value
-            when String
+            when String, Date
               object.morph(attribute, value)
             when Array
               object.morph(attribute.pluralize, objects_from_array(value, name, namespace))
             when Hash
               object.morph(attribute, object_from_hash(value, name, namespace))
+            when NilClass
+              object.morph(attribute, nil)
             else
-              raise "cannot handle adding value of class: #{value.class.name}"
+              raise "cannot handle adding #{name} value of class: #{value.class.name}"
           end
         end
         object
