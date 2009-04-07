@@ -241,7 +241,7 @@ module Morph
       end
 
       def convert_to_morph_method_name label
-        name = label.to_s.downcase.tr('()*',' ').gsub('%','percentage').strip.chomp(':').strip.gsub(/\s/,'_').squeeze('_')
+        name = label.to_s.downcase.tr('()-*',' ').gsub('%','percentage').strip.chomp(':').strip.gsub(/\s/,'_').squeeze('_')
         name = '_'+name if name =~ /^\d/
         name
       end
