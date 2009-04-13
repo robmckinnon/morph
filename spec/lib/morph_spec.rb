@@ -313,6 +313,9 @@ describe Morph do
 
     include MorphSpecHelperMethods
 
+    it 'should covert dash to underscore' do
+      check_convert_to_morph_method_name 'hi-time', 'hi_time'
+    end
     it 'should upper case to lower case' do
       check_convert_to_morph_method_name 'CaSe', 'case'
     end

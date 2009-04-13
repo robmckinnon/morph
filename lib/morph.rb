@@ -1,7 +1,7 @@
 require 'activesupport'
 
 module Morph
-  VERSION = "0.2.6"
+  VERSION = "0.2.7"
 
   class << self
     def generate_migrations object, options={}

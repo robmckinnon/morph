@@ -1,3 +1,5 @@
+v0.2.7. handle dash when converting to method name, reported by danwrong
+
 v0.2.6. handle more types of value types in from_hash()
 
 v0.2.5. camelize names for classes in from_hash()
