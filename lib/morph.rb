@@ -111,7 +111,7 @@ module Morph
         attributes.each do |name, value|
           attribute = name.gsub(':',' ').underscore
           case value
-            when String, Date
+            when String, Date, Time, TrueClass, FalseClass, Fixnum, Float
               object.morph(attribute, value)
             when Array
               attribute = attribute.pluralize
