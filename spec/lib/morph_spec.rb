@@ -485,4 +485,33 @@ xmlns_xsi: http://www.w3.org/2001/XMLSchema-instance
 xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.xsd|
     end
   end
+  
+  describe 'creating from xml' do
+    
+    it 'should create classes and object instances' do
+      councils = Morph.from_xml(xml)
+      councils.class.name.should == 'Morph::Councils'
+      councils.class.morph_methods.size.should == 2
+      councils.class.morph_methods.include?('councils').should be_true
+
+      councils.councils.class.should == Array
+      councils.councils.size.should == 2
+      councils.councils.first.class.name.should == 'Morph::Council'
+      councils.councils.first.name.should == 'Aberdeen City Council'
+      councils.councils.last.name.should == 'Allerdale Borough Council'
+    end
+
+    def xml
+%Q[<?xml version="1.0" encoding="UTF-8"?>
+<councils type="array">
+  <council>
+    <name>Aberdeen City Council</name>
+  </council>
+  <council>
+    <name>Allerdale Borough Council</name>
+  </council>
+</councils>]
+    end
+
+  end
 end

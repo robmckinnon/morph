@@ -1,7 +1,19 @@
-require 'activesupport'
+begin
+  require 'active_support/core_ext/object/blank'
+  require 'active_support/inflector'
+  require 'active_support/core_ext/string/inflections'
+  require 'active_support/core_ext/xml_mini'
+  require 'active_support/core_ext/hash/conversions'
+rescue Exception => e
+  begin
+    require 'active_support'
+  rescue Exception => e
+    require 'activesupport'
+  end
+end
 
 module Morph
-  VERSION = "0.2.7"
+  VERSION = "0.2.8"
 
   class << self
     def generate_migrations object, options={}
@@ -12,6 +24,11 @@ module Morph
       add_migration name, object.morph_attributes, migrations, options
     end
 
+    def from_xml xml, namespace=Morph
+      hash = Hash.from_xml xml
+      from_hash hash, namespace
+    end
+
     def from_hash hash, namespace=Morph
       if hash.keys.size == 1
         key = hash.keys.first
@@ -19,6 +36,8 @@ module Morph
         if hash[key].is_a? Hash
           attributes = hash[key]
           add_to_object object, attributes, namespace
+        elsif hash[key].is_a? Array
+          add_to_object object, hash, namespace
         end
         object
       else
@@ -42,7 +61,7 @@ module Morph
             when String
               attribute_name = attribute.to_s
               unless options[:ignore].include?(attribute_name)
-                type = attribute_name.ends_with?('date') ? 'date' : 'string'
+                type = attribute_name[/date$/] ? 'date' : 'string'
                 attribute_def = "#{attribute}:#{type}"
                 migration.sub!(migration, "#{migration} #{attribute_def}")
               end
@@ -95,7 +114,8 @@ module Morph
             when String, Date
               object.morph(attribute, value)
             when Array
-              object.morph(attribute.pluralize, objects_from_array(value, name, namespace))
+              attribute = attribute.pluralize
+              object.morph(attribute, objects_from_array(value, name, namespace))
             when Hash
               object.morph(attribute, object_from_hash(value, name, namespace))
             when NilClass
