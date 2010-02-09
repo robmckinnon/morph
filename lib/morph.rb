@@ -48,14 +48,19 @@ module Morph
     def from_hash hash, namespace=Morph
       if hash.keys.size == 1
         key = hash.keys.first
-        object = object_from_name key, namespace
+
         if hash[key].is_a? Hash
           attributes = hash[key]
+          object = object_from_name(key, namespace)
           add_to_object object, attributes, namespace
+          object
         elsif hash[key].is_a? Array
-          add_to_object object, hash, namespace
+          array = hash[key]
+          name = key.to_s.singularize
+          objects_from_array(array, name, namespace)
+        else
+          raise 'hash root value must be a Hash or an Array'
         end
-        object
       else
         raise 'hash must have single key'
       end

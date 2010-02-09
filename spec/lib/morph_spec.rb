@@ -487,17 +487,26 @@ xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.x
   end
   
   describe 'creating from xml' do
+    
+    def check_councils councils, class_name
+      councils.class.should == Array
+      councils.size.should == 2
+      councils.first.class.name.should == class_name
+      councils.first.name.should == 'Aberdeen City Council'
+      councils.last.name.should == 'Allerdale Borough Council'
+    end
+
     it 'should create classes and object instances' do
       councils = Morph.from_xml(xml)
-      councils.class.name.should == 'Morph::Councils'
-      councils.class.morph_methods.size.should == 2
-      councils.class.morph_methods.include?('councils').should be_true
-
-      councils.councils.class.should == Array
-      councils.councils.size.should == 2
-      councils.councils.first.class.name.should == 'Morph::Council'
-      councils.councils.first.name.should == 'Aberdeen City Council'
-      councils.councils.last.name.should == 'Allerdale Borough Council'
+      check_councils councils, 'Morph::Council'
+    end
+    
+    describe 'when module name is supplied' do
+      it 'should create classes and object instances' do
+        Object.const_set 'Ppc', Module.new
+        councils = Morph.from_xml(xml, Ppc)
+        check_councils councils, 'Ppc::Council'
+      end
     end
 
     def xml
