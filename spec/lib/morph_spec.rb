@@ -487,7 +487,6 @@ xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.x
   end
   
   describe 'creating from xml' do
-    
     it 'should create classes and object instances' do
       councils = Morph.from_xml(xml)
       councils.class.name.should == 'Morph::Councils'
@@ -512,6 +511,42 @@ xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.x
   </council>
 </councils>]
     end
-
   end
+
+  describe 'creating from tsv (tab separated value)' do
+    
+    def check_councillors councillors, class_name
+      councillors.class.should == Array
+      councillors.size.should == 2
+      councillor = councillors.first
+      councillor.class.name.should == class_name
+      councillor.name.should == 'Ted Roe'
+      councillor.party.should == 'labour'
+      councillor.councillors.should == 'Councillor for Stretford Ward'
+      councillor.councils.should == 'Trafford Council'
+      councillor.respond_to?(:council_experience).should be_false
+
+      councillor = councillors.last
+      councillor.name.should == 'Ali Davidson'
+      councillor.party.should == 'labour'
+      councillor.councillors.should == ''
+      councillor.councils.should == 'Basildon District Council'
+      councillor.respond_to?(:council_experience).should be_false
+    end
+
+    describe 'when class name is supplied' do
+      it 'should create classes and object instances' do
+        councillors = Morph.from_tsv(tsv, 'Councillor')
+        check_councillors councillors, 'Morph::Councillor'
+      end
+    end
+
+    def tsv
+%Q[name	party	councillors	councils	council_experience
+Ted Roe	labour	Councillor for Stretford Ward	Trafford Council	
+Ali Davidson	labour		Basildon District Council	
+]
+    end
+  end
+
 end

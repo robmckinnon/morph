@@ -24,6 +24,22 @@ module Morph
       add_migration name, object.morph_attributes, migrations, options
     end
 
+    def from_tsv tsv, class_name, namespace=Morph
+      lines = tsv.split("\n")
+      attributes = lines[0].split("\t")
+      lines = lines[1..(lines.length-1)]
+      objects = []
+      lines.each do |line|
+        values = line.split("\t")
+        object = object_from_name class_name, namespace
+        attributes.each_with_index do |attribute, index|
+          object.morph(attribute, values[index])
+        end
+        objects << object
+      end
+      objects
+    end
+
     def from_xml xml, namespace=Morph
       hash = Hash.from_xml xml
       from_hash hash, namespace
