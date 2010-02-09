@@ -1,12 +1,51 @@
 Morph allows you to emerge class definitions via calling assignment methods; mix with Hpricot for screen scrapping fun.
 
 
+== Morph creating classes +from_xml()+
+
+Here's example code showing Morph playing with XML:
+
+ require 'rubygems'; require 'morph'
+
+ xml = %Q[<?xml version="1.0" encoding="UTF-8"?>
+ <councils type="array">
+   <council code='1'>
+     <name>Aberdeen City Council</name>
+   </council>
+   <council code='2'>
+     <name>Allerdale Borough Council</name>
+   </council>
+ </councils>]
+ 
+ councils = Morph.from_xml(xml)
+ # => [#<Morph::Council @code="1", @name="Aberdeen City Council">,
+       #<Morph::Council @code="2", @name="Allerdale Borough Council">]
+       
+ councils.first.name
+ # => "Aberdeen City Council"
+
+== Morph creating classes +from_tsv()+
+
+Here's example code showing Morph playing with TSV (tab-separated values):
+
+ require 'rubygems'; require 'morph'
+
+ tsv = %Q[name\tparty\nTed Roe\tred\nAli Davidson\tblue\nSue Smith\tgreen]
+
+ people = Morph.from_tsv(tsv, 'person')
+ # => [#<Morph::Person @name="Ted Roe", @party="red">, 
+       #<Morph::Person @name="Ali Davidson", @party="blue">,
+       #<Morph::Person @name="Sue Smith", @party="green">]
+ 
+ people.last.party
+ # => "green"
 
 == Morph playing with +Hpricot+
 
 Here's example code showing Morph playing with Hpricot:
 
- require 'hpricot'; require 'open-uri'; require 'morph'
+ require 'rubygems'; require 'hpricot'; require 'open-uri'
+ require 'morph'
 
  class Hubbit
    include Morph  # allows class to morph

@@ -512,10 +512,10 @@ xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.x
     def xml
 %Q[<?xml version="1.0" encoding="UTF-8"?>
 <councils type="array">
-  <council>
+  <council code='1'>
     <name>Aberdeen City Council</name>
   </council>
-  <council>
+  <council code='2'>
     <name>Allerdale Borough Council</name>
   </council>
 </councils>]
