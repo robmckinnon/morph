@@ -540,6 +540,14 @@ xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.x
         check_councillors councillors, 'Morph::Councillor'
       end
     end
+    
+    describe 'when class name and module name is supplied' do
+      it 'should create classes and object instances' do
+        Object.const_set 'Ppc', Module.new
+        councillors = Morph.from_tsv(tsv, 'Councillor', Ppc)
+        check_councillors councillors, 'Ppc::Councillor'
+      end
+    end
 
     def tsv
 %Q[name	party	councillors	councils	council_experience
