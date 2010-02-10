@@ -1,7 +1,7 @@
 Morph allows you to emerge class definitions via calling assignment methods; mix with Hpricot for screen scrapping fun.
 
 
-== Morph creating classes +from_xml()+
+== Morph creating classes +from_xml+
 
 Here's example code showing Morph playing with XML:
 
@@ -24,7 +24,7 @@ Here's example code showing Morph playing with XML:
  councils.first.name
  # => "Aberdeen City Council"
 
-== Morph creating classes +from_tsv()+
+== Morph creating classes +from_tsv+
 
 Here's example code showing Morph playing with TSV (tab-separated values):
 
