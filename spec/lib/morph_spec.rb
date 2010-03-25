@@ -91,6 +91,15 @@ describe Morph do
       attributes = @morph.morph_attributes
       attributes[:every].should == 'which'
       attributes[:loose].should == { :honky_tonk => {:way => 'but'} }
+      attributes.delete(:every)
+      attributes = @morph.morph_attributes
+      attributes[:every].should == 'which'
+      
+      attributes = @morph.class.morph_attributes
+      attributes.should == [:every, :loose]
+      attributes.delete(:every)
+      attributes = @morph.class.morph_attributes
+      attributes.should == [:every, :loose]
     end
 
     after :each do
@@ -424,9 +433,15 @@ describe Morph do
 
       company_details = Morph.from_hash(h, Company::House)
       company_details.class.name.should == 'Company::House::CompanyDetails'
-      company_details.class.morph_methods.include?('last_full_mem_date').should be_true
-      company_details.class.morph_methods.include?('accounts').should be_true
+      morph_methods = company_details.class.morph_methods
+      morph_methods.include?('last_full_mem_date').should be_true
+      morph_methods.include?('accounts').should be_true
 
+      morph_methods.delete('accounts')
+      morph_methods.include?('accounts').should be_false
+      morph_methods = company_details.class.morph_methods
+      morph_methods.include?('accounts').should be_true
+      
       company_details.accounts.class.name.should == 'Company::House::Accounts'
       company_details.accounts.overdue.should == 'NO'
       company_details.last_full_mem_date.should == "2002-03-25"
@@ -522,9 +537,9 @@ xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.x
     end
   end
 
-  describe 'creating from tsv (tab separated value)' do
+  describe 'creating from' do 
     
-    def check_councillors councillors, class_name
+    def check_councillors councillors, class_name, nil_value=''
       councillors.class.should == Array
       councillors.size.should == 2
       councillor = councillors.first
@@ -538,31 +553,57 @@ xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.x
       councillor = councillors.last
       councillor.name.should == 'Ali Davidson'
       councillor.party.should == 'labour'
-      councillor.councillors.should == ''
+      councillor.councillors.should == nil_value
       councillor.councils.should == 'Basildon District Council'
       councillor.respond_to?(:council_experience).should be_false
     end
 
-    describe 'when class name is supplied' do
-      it 'should create classes and object instances' do
-        councillors = Morph.from_tsv(tsv, 'Councillor')
-        check_councillors councillors, 'Morph::Councillor'
+    describe 'tsv (tab separated value)' do
+      describe 'when class name is supplied' do
+        it 'should create classes and object instances' do
+          councillors = Morph.from_tsv(tsv, 'Councillor')
+          check_councillors councillors, 'Morph::Councillor'
+        end
       end
-    end
-    
-    describe 'when class name and module name is supplied' do
-      it 'should create classes and object instances' do
-        Object.const_set 'Ppc', Module.new
-        councillors = Morph.from_tsv(tsv, 'Councillor', Ppc)
-        check_councillors councillors, 'Ppc::Councillor'
+      
+      describe 'when class name and module name is supplied' do
+        it 'should create classes and object instances' do
+          Object.const_set 'Ppc', Module.new
+          councillors = Morph.from_tsv(tsv, 'Councillor', Ppc)
+          check_councillors councillors, 'Ppc::Councillor'
+        end
       end
-    end
 
-    def tsv
-%Q[name	party	councillors	councils	council_experience
+      def tsv
+  %Q[name	party	councillors	councils	council_experience
 Ted Roe	labour	Councillor for Stretford Ward	Trafford Council	
 Ali Davidson	labour		Basildon District Council	
 ]
+      end
+    end
+
+    describe 'csv (comma separated value)' do  
+      describe 'when class name is supplied' do
+        it 'should create classes and object instances' do
+          councillors = Morph.from_csv(csv, 'Councillor')
+          check_councillors councillors, 'Morph::Councillor', nil
+        end
+      end
+      
+      describe 'when class name and module name is supplied' do
+        it 'should create classes and object instances' do
+          Object.const_set 'Ppc', Module.new
+          councillors = Morph.from_csv(csv, 'Councillor', Ppc)
+          check_councillors councillors, 'Ppc::Councillor', nil
+        end
+      end
+  
+      def csv
+  %Q[name,party,councillors,councils,council_experience
+Ted Roe,labour,Councillor for Stretford Ward,Trafford Council,
+Ali Davidson,labour,,Basildon District Council,
+]
+      end
     end
   end
 

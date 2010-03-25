@@ -1,3 +1,4 @@
+require 'fastercsv'
 begin
   require 'active_support/core_ext/object/blank'
   require 'active_support/inflector'
@@ -13,7 +14,7 @@ rescue Exception => e
 end
 
 module Morph
-  VERSION = "0.2.8"
+  VERSION = "0.2.9"
 
   class << self
     def generate_migrations object, options={}
@@ -22,6 +23,18 @@ module Morph
       migrations = []
       name = object.class.name.demodulize.underscore
       add_migration name, object.morph_attributes, migrations, options
+    end
+
+    def from_csv csv, class_name, namespace=Morph
+      objects = []
+      FasterCSV.parse(csv, { :headers => true }) do |row|
+        object = object_from_name class_name, namespace
+        row.each do |key, value|
+          object.morph(key, value)
+        end
+        objects << object
+      end
+      objects
     end
 
     def from_tsv tsv, class_name, namespace=Morph
@@ -85,8 +98,7 @@ module Morph
                 type = attribute_name[/date$/] ? 'date' : 'string'
                 attribute_def = "#{attribute}:#{type}"
                 migration.sub!(migration, "#{migration} #{attribute_def}")
-              end
-            when Array
+              end            when Array
               options[:belongs_to_id] = " #{name}_id:integer"
               migrations = add_migration(attribute, '', migrations, options)
             when Hash
@@ -155,6 +167,11 @@ module Morph
 
     @@adding_morph_method = Hash.new {|hash,klass| hash[klass] = false }
     @@morph_methods = Hash.new {|hash,klass| hash[klass] = {} }
+    @@morph_attributes = Hash.new {|hash,klass| hash[klass] = [] }
+
+    def morph_attributes
+      @@morph_attributes[self] + []
+    end
 
     def morph_methods
       @@morph_methods[self].keys.sort
@@ -189,11 +206,19 @@ module Morph
     protected
 
       def method_added symbol
-        @@morph_methods[self][symbol.to_s] = true if @@adding_morph_method[self]
+        if @@adding_morph_method[self]
+          @@morph_methods[self][symbol.to_s] = true
+          is_writer = symbol.to_s =~ /=$/
+          @@morph_attributes[self] << symbol unless is_writer
+        end
       end
 
       def method_removed symbol
-        @@morph_methods[self].delete symbol.to_s if @@morph_methods[self].has_key? symbol.to_s
+        if @@morph_methods[self].has_key? symbol.to_s
+          @@morph_methods[self].delete symbol.to_s
+          is_writer = symbol.to_s =~ /=$/
+          @@morph_attributes[self].delete(symbol) unless is_writer 
+        end
       end
 
   end

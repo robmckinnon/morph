@@ -1,3 +1,5 @@
+v0.2.9. added from_csv(); require fastercsv; added morph_attributes() class method
+
 v0.2.8. added from_xml() and from_tsv(); updated for active_support; fixed from_hash() when hash root is an array
 
 v0.2.7. handle dash when converting to method name, reported by danwrong
