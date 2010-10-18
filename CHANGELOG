@@ -1,3 +1,5 @@
+v0.3.1. only show fastercsv install message if Morph.from_csv() called
+
 v0.3.0. modifications for ruby 1.9.2 compatibility
 
 v0.2.9. added from_csv(); require fastercsv; added morph_attributes() class method

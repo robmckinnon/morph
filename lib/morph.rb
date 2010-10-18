@@ -1,12 +1,5 @@
 if RUBY_VERSION >= "1.9"
   require 'csv'
-else
-  begin
-    require 'fastercsv'
-  rescue LoadError
-    puts "\nYou need to install the fastercsv gem to use Morph.from_csv with Ruby 1.8"
-    puts "  sudo gem install fastercsv\n"
-  end
 end
 begin
   # require 'active_support'
@@ -25,7 +18,7 @@ rescue Exception => e
 end
 
 module Morph
-  VERSION = "0.3.0"
+  VERSION = "0.3.1"
 
   class << self
     def generate_migrations object, options={}
@@ -38,7 +31,16 @@ module Morph
 
     def from_csv csv, class_name, namespace=Morph
       objects = []
-      csv_utility = (RUBY_VERSION >= "1.9") ? CSV : FasterCSV
+      if !(RUBY_VERSION >= "1.9")
+        begin
+          require 'fastercsv'
+        rescue LoadError
+          puts "\nYou need to install the fastercsv gem to use Morph.from_csv() with Ruby 1.8"
+          puts "  gem install fastercsv\n"
+        end
+      end
+
+      csv_utility = (RUBY_VERSION >= "1.9") ? CSV : 'FasterCSV'.constantize
       csv_utility.parse(csv, { :headers => true }) do |row|
           object = object_from_name class_name, namespace
           row.each do |key, value|
