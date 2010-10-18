@@ -1,3 +1,4 @@
+# encoding: utf-8
 require File.dirname(__FILE__) + '/../../lib/morph'
 require File.dirname(__FILE__) + '/../morph_spec_helper'
 
@@ -59,8 +60,13 @@ describe Morph do
       @morphed_class.morph_methods.size.should == 2
       @another_morphed_class.morph_methods.size.should == 2
 
-      @morphed_class.morph_methods.should == ['every','every=']
-      @another_morphed_class.morph_methods.should == ['no','no=']
+      if RUBY_VERSION >= "1.9"
+        @morphed_class.morph_methods.should == [:every,:every=]
+        @another_morphed_class.morph_methods.should == [:no,:no=]
+      else
+        @morphed_class.morph_methods.should == ['every','every=']
+        @another_morphed_class.morph_methods.should == ['no','no=']
+      end
     end
 
     it 'should call morph_attributes on both objects, when one object has a reference to another' do
@@ -94,7 +100,7 @@ describe Morph do
       attributes.delete(:every)
       attributes = @morph.morph_attributes
       attributes[:every].should == 'which'
-      
+
       attributes = @morph.class.morph_attributes
       attributes.should == [:every, :loose]
       attributes.delete(:every)
@@ -176,7 +182,7 @@ describe Morph do
 
   describe "when morph method used to set unicode attribute name with a value" do
     before :each do
-      $KCODE = "u"
+      $KCODE = "u" unless RUBY_VERSION >= "1.9"
       remove_morph_methods
       @age = 19
       @attribute = "年龄"
@@ -185,7 +191,7 @@ describe Morph do
     end
 
     after :all do
-      $KCODE = "NONE"
+      $KCODE = "NONE" unless RUBY_VERSION >= "1.9"
     end
 
     it_should_behave_like "class with generated accessor methods added"
@@ -197,7 +203,7 @@ describe Morph do
 
   describe "when morph method used to set japanese and latin unicode attribute name with a value" do
     before :each do
-      $KCODE = "u"
+      $KCODE = "u" unless RUBY_VERSION >= "1.9"
       remove_morph_methods
       @age = 19
       @attribute = "ページビュー_graph"
@@ -206,7 +212,7 @@ describe Morph do
     end
 
     after :all do
-      $KCODE = "NONE"
+      $KCODE = "NONE" unless RUBY_VERSION >= "1.9"
     end
 
     it_should_behave_like "class with generated accessor methods added"
@@ -434,14 +440,22 @@ describe Morph do
       company_details = Morph.from_hash(h, Company::House)
       company_details.class.name.should == 'Company::House::CompanyDetails'
       morph_methods = company_details.class.morph_methods
-      morph_methods.include?('last_full_mem_date').should be_true
-      morph_methods.include?('accounts').should be_true
+      if RUBY_VERSION >= "1.9"
+        morph_methods.include?(:last_full_mem_date).should be_true
+        morph_methods.include?(:accounts).should be_true
+        morph_methods.delete(:accounts)
+        morph_methods.include?(:accounts).should be_false
+        morph_methods = company_details.class.morph_methods
+        morph_methods.include?(:accounts).should be_true
+      else
+        morph_methods.include?('last_full_mem_date').should be_true
+        morph_methods.include?('accounts').should be_true
+        morph_methods.delete('accounts')
+        morph_methods.include?('accounts').should be_false
+        morph_methods = company_details.class.morph_methods
+        morph_methods.include?('accounts').should be_true
+      end
 
-      morph_methods.delete('accounts')
-      morph_methods.include?('accounts').should be_false
-      morph_methods = company_details.class.morph_methods
-      morph_methods.include?('accounts').should be_true
-      
       company_details.accounts.class.name.should == 'Company::House::Accounts'
       company_details.accounts.overdue.should == 'NO'
       company_details.last_full_mem_date.should == "2002-03-25"
@@ -500,9 +514,9 @@ xmlns_xsi: http://www.w3.org/2001/XMLSchema-instance
 xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.xsd|
     end
   end
-  
+
   describe 'creating from xml' do
-    
+
     def check_councils councils, class_name
       councils.class.should == Array
       councils.size.should == 2
@@ -515,7 +529,7 @@ xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.x
       councils = Morph.from_xml(xml)
       check_councils councils, 'Morph::Council'
     end
-    
+
     describe 'when module name is supplied' do
       it 'should create classes and object instances' do
         Object.const_set 'Ppc', Module.new
@@ -537,8 +551,8 @@ xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.x
     end
   end
 
-  describe 'creating from' do 
-    
+  describe 'creating from' do
+
     def check_councillors councillors, class_name, nil_value=''
       councillors.class.should == Array
       councillors.size.should == 2
@@ -565,7 +579,7 @@ xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.x
           check_councillors councillors, 'Morph::Councillor'
         end
       end
-      
+
       describe 'when class name and module name is supplied' do
         it 'should create classes and object instances' do
           Object.const_set 'Ppc', Module.new
@@ -576,20 +590,20 @@ xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.x
 
       def tsv
   %Q[name	party	councillors	councils	council_experience
-Ted Roe	labour	Councillor for Stretford Ward	Trafford Council	
-Ali Davidson	labour		Basildon District Council	
+Ted Roe	labour	Councillor for Stretford Ward	Trafford Council
+Ali Davidson	labour		Basildon District Council
 ]
       end
     end
 
-    describe 'csv (comma separated value)' do  
+    describe 'csv (comma separated value)' do
       describe 'when class name is supplied' do
         it 'should create classes and object instances' do
           councillors = Morph.from_csv(csv, 'Councillor')
           check_councillors councillors, 'Morph::Councillor', nil
         end
       end
-      
+
       describe 'when class name and module name is supplied' do
         it 'should create classes and object instances' do
           Object.const_set 'Ppc', Module.new
@@ -597,7 +611,7 @@ Ali Davidson	labour		Basildon District Council
           check_councillors councillors, 'Ppc::Councillor', nil
         end
       end
-  
+
       def csv
   %Q[name,party,councillors,councils,council_experience
 Ted Roe,labour,Councillor for Stretford Ward,Trafford Council,

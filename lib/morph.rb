@@ -1,20 +1,31 @@
-require 'fastercsv'
+if RUBY_VERSION >= "1.9"
+  require 'csv'
+else
+  begin
+    require 'fastercsv'
+  rescue LoadError
+    puts "\nYou need to install the fastercsv gem to use Morph.from_csv with Ruby 1.8"
+    puts "  sudo gem install fastercsv\n"
+  end
+end
 begin
+  # require 'active_support'
   require 'active_support/core_ext/object/blank'
   require 'active_support/inflector'
   require 'active_support/core_ext/string/inflections'
-  require 'active_support/core_ext/xml_mini'
   require 'active_support/core_ext/hash/conversions'
 rescue Exception => e
   begin
+    puts e.to_s
     require 'active_support'
   rescue Exception => e
+    puts e.to_s
     require 'activesupport'
   end
 end
 
 module Morph
-  VERSION = "0.2.9"
+  VERSION = "0.3.0"
 
   class << self
     def generate_migrations object, options={}
@@ -27,13 +38,14 @@ module Morph
 
     def from_csv csv, class_name, namespace=Morph
       objects = []
-      FasterCSV.parse(csv, { :headers => true }) do |row|
-        object = object_from_name class_name, namespace
-        row.each do |key, value|
-          object.morph(key, value)
+      csv_utility = (RUBY_VERSION >= "1.9") ? CSV : FasterCSV
+      csv_utility.parse(csv, { :headers => true }) do |row|
+          object = object_from_name class_name, namespace
+          row.each do |key, value|
+            object.morph(key, value)
+          end
+          objects << object
         end
-        objects << object
-      end
       objects
     end
 
@@ -90,6 +102,7 @@ module Morph
         migration = "./script/generate model #{name}#{options[:belongs_to_id]}"
         options[:belongs_to_id] = ''
         migrations << migration
+        attributes = [attributes] if attributes.is_a?(String)
         attributes.to_a.sort{|a,b| a[0].to_s <=> b[0].to_s}.each do |attribute, value|
           case value
             when String
@@ -174,7 +187,11 @@ module Morph
     end
 
     def morph_methods
-      @@morph_methods[self].keys.sort
+      if RUBY_VERSION >= "1.9"
+        @@morph_methods[self].keys.sort.map(&:to_sym)
+      else
+        @@morph_methods[self].keys.sort
+      end
     end
 
     def adding_morph_method= true_or_false
@@ -217,7 +234,7 @@ module Morph
         if @@morph_methods[self].has_key? symbol.to_s
           @@morph_methods[self].delete symbol.to_s
           is_writer = symbol.to_s =~ /=$/
-          @@morph_attributes[self].delete(symbol) unless is_writer 
+          @@morph_attributes[self].delete(symbol) unless is_writer
         end
       end
 
@@ -282,6 +299,9 @@ module Morph
 
     def morph_method_missing symbol, *args
       attribute = symbol.to_s.chomp '='
+      if RUBY_VERSION >= "1.9"
+        attribute = attribute.to_sym
+      end
 
       if Object.instance_methods.include?(attribute)
         raise "'#{attribute}' is an instance_method on Object, cannot create accessor methods for '#{attribute}'"

@@ -18,7 +18,6 @@ begin
     m.rubyforge_name = "morph"
     m.rdoc_options << '--inline-source'
     m.dependencies = ["activesupport >=2.0.2"]
-    m.dependencies = ["fastercsv >=1.5.0"]
     m.rdoc_pattern = ["README", "CHANGELOG", "LICENSE"]
   end
 

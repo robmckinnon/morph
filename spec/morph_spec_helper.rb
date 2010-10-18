@@ -1,3 +1,4 @@
+# encoding: utf-8
 require File.dirname(__FILE__) + '/../lib/morph'
 
 module MorphSpecHelperMethods
@@ -68,19 +69,35 @@ describe "class with generated accessor methods added", :shared => true do
   after  :all do remove_morph_methods; end
 
   it 'should add reader method to class instance_methods list' do
-    each_attribute { |a| instance_methods.should include(a.to_s) }
+    if RUBY_VERSION >= "1.9"
+      each_attribute { |a| instance_methods.should include(a.to_s.to_sym) }
+    else
+      each_attribute { |a| instance_methods.should include(a.to_s) }
+    end
   end
 
   it 'should add writer method to class instance_methods list' do
-    each_attribute { |a| instance_methods.should include("#{a}=") }
+    if RUBY_VERSION >= "1.9"
+      each_attribute { |a| instance_methods.should include("#{a}=".to_sym) }
+    else
+      each_attribute { |a| instance_methods.should include("#{a}=") }
+    end
   end
 
   it 'should add reader method to class morph_methods list' do
-    each_attribute { |a| morph_methods.should include(a.to_s) }
+    if RUBY_VERSION >= "1.9"
+      each_attribute { |a| morph_methods.should include(a.to_s.to_sym) }
+    else
+      each_attribute { |a| morph_methods.should include(a.to_s) }
+    end
   end
 
   it 'should add writer method to class morph_methods list' do
-    each_attribute { |a| morph_methods.should include("#{a}=") }
+    if RUBY_VERSION >= "1.9"
+      each_attribute { |a| morph_methods.should include("#{a}=".to_sym) }
+    else
+      each_attribute { |a| morph_methods.should include("#{a}=") }
+    end
   end
 
   it 'should only have generated accessor methods in morph_methods list' do
