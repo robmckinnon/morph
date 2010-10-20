@@ -18,7 +18,7 @@ rescue Exception => e
 end
 
 module Morph
-  VERSION = "0.3.1"
+  VERSION = "0.3.2" unless defined? Morph::VERSION
 
   class << self
     def generate_migrations object, options={}
@@ -157,6 +157,7 @@ module Morph
 
       def add_to_object object, attributes, namespace
         attributes.each do |name, value|
+          name = name.to_s if name.is_a?(Symbol)
           attribute = name.gsub(':',' ').underscore
           case value
             when String, Date, Time, TrueClass, FalseClass, Fixnum, Float

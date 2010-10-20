@@ -396,7 +396,7 @@ describe Morph do
     it 'should create classes and object instances' do
       h = {
         "CompanyDetails"=> {
-          "RegAddress"=> {
+          :RegAddress=> {
               "AddressLine"=>["ST DAVID'S HOUSE", "WEST WING", "WOOD STREET", "CARDIFF CF10 1ES"]},
           "LastFullMemDate"=>"2002-03-25",
           "xsi:schemaLocation"=>"xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.xsd",

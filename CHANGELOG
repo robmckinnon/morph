@@ -1,3 +1,5 @@
+v0.3.2. from_hash() can now handle keys that are symbols
+
 v0.3.1. only show fastercsv install message if Morph.from_csv() called
 
 v0.3.0. modifications for ruby 1.9.2 compatibility
