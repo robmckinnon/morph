@@ -1,9 +1,13 @@
 # encoding: utf-8
-require File.dirname(__FILE__) + '/../../lib/morph'
 require File.dirname(__FILE__) + '/../morph_spec_helper'
 
 describe Morph do
+  include MorphSpecHelperMethods
+
   describe "when writer method that didn't exist before is called with non-nil value" do
+    before :all do initialize_morph; end
+    after  :all do remove_morph_methods; end
+
     before :each do
       remove_morph_methods
       @quack = 'quack'
@@ -119,7 +123,7 @@ describe Morph do
 
     after :all do
       remove_morph_methods
-      @morphed_class.class_eval "remove_method :happy"
+      @morphed_class.class_eval "remove_method :happy" if @morphed_class
     end
 
     it 'should not return methods defined in class in morph_methods list' do
@@ -139,6 +143,8 @@ describe Morph do
   end
 
   describe 'when morph method used to set attribute value' do
+    before :all do initialize_morph; end
+    after  :all do remove_morph_methods; end
 
     before :each do
       remove_morph_methods
@@ -156,6 +162,9 @@ describe Morph do
   end
 
   describe 'when morph method used to set an attribute value hash' do
+    before :all do initialize_morph; end
+    after  :all do remove_morph_methods; end
+
     before :each do
       remove_morph_methods
       @attributes = [:drink,:sugars,:milk]
@@ -180,7 +189,11 @@ describe Morph do
     end
   end
 
+=begin
   describe "when morph method used to set unicode attribute name with a value" do
+    before :all do initialize_morph; end
+    after  :all do remove_morph_methods; end
+
     before :each do
       $KCODE = "u" unless RUBY_VERSION >= "1.9"
       remove_morph_methods
@@ -200,8 +213,10 @@ describe Morph do
       @morph.send(@attribute.to_sym) == @age
     end
   end
-
   describe "when morph method used to set japanese and latin unicode attribute name with a value" do
+    before :all do initialize_morph; end
+    after  :all do remove_morph_methods; end
+
     before :each do
       $KCODE = "u" unless RUBY_VERSION >= "1.9"
       remove_morph_methods
@@ -221,7 +236,7 @@ describe Morph do
       @morph.send(@attribute.to_sym) == @age
     end
   end
-
+=end
   describe 'when morph method used to set blank space attribute value' do
     before :each do
       remove_morph_methods
@@ -264,6 +279,9 @@ describe Morph do
   end
 
   describe "when writer method called matches a class reader method" do
+
+    before :all do initialize_morph; end
+    after  :all do remove_morph_methods; end
 
     before :each do
       remove_morph_methods
@@ -582,7 +600,7 @@ xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.x
 
       describe 'when class name and module name is supplied' do
         it 'should create classes and object instances' do
-          Object.const_set 'Ppc', Module.new
+          Object.const_set 'Ppc', Module.new unless defined? Ppc
           councillors = Morph.from_tsv(tsv, 'Councillor', Ppc)
           check_councillors councillors, 'Ppc::Councillor'
         end
@@ -606,7 +624,7 @@ Ali Davidson	labour		Basildon District Council
 
       describe 'when class name and module name is supplied' do
         it 'should create classes and object instances' do
-          Object.const_set 'Ppc', Module.new
+          Object.const_set 'Ppc', Module.new unless defined? Ppc
           councillors = Morph.from_csv(csv, 'Councillor', Ppc)
           check_councillors councillors, 'Ppc::Councillor', nil
         end

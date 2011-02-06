@@ -29,8 +29,16 @@ module MorphSpecHelperMethods
 
   def remove_morph_methods
     @morphed_class.instance_methods.each do |method|
-      @morphed_class.class_eval "remove_method :#{method}" unless @original_instance_methods.include?(method)
-    end
+      begin
+        unless method[/received_message\?|should_not_receive|rspec_verify|unstub|rspec_reset|should_receive|as_null_object|stub_chain|stub\!|null_object?|stub/]
+          remove_cmd = 'remove_method :' + method
+          @morphed_class.class_eval remove_cmd unless @original_instance_methods.include?(method)
+        end
+      rescue Exception => e
+        raise e.to_s + '------' + @original_instance_methods.sort.inspect
+      end
+
+    end if @morphed_class
   end
 
   def remove_another_morph_methods
@@ -62,7 +70,7 @@ module MorphSpecHelperMethods
   end
 end
 
-describe "class with generated accessor methods added", :shared => true do
+shared_examples_for "class with generated accessor methods added" do
 
   include MorphSpecHelperMethods
   before :all do initialize_morph; end
@@ -106,7 +114,7 @@ describe "class with generated accessor methods added", :shared => true do
 
 end
 
-describe "class without generated accessor methods added", :shared => true do
+shared_examples_for "class without generated accessor methods added" do
   include MorphSpecHelperMethods
 
   before :all do
