@@ -27,15 +27,15 @@ describe Morph do
     end
 
     it 'should generate rails model generator script line, with given model name' do
-      @morphed_class.script_generate {|model_name| 'SomethingDifferent'}.should == "ruby script/destroy rspec_model SomethingDifferent; ruby script/generate rspec_model SomethingDifferent noise:string"
+      @morphed_class.script_generate {|model_name| 'SomethingDifferent'}.should == "rails destroy model SomethingDifferent; rails generate model SomethingDifferent noise:string"
     end
 
     it 'should generate rails model generator script line' do
-      @morphed_class.script_generate.should == "ruby script/destroy rspec_model ExampleMorph; ruby script/generate rspec_model ExampleMorph noise:string"
+      @morphed_class.script_generate.should == "rails destroy model ExampleMorph; rails generate model ExampleMorph noise:string"
     end
 
     it 'should generate rails model generator script line' do
-      @morphed_class.script_generate(:generator=>'model').should == "ruby script/destroy model ExampleMorph; ruby script/generate model ExampleMorph noise:string"
+      @morphed_class.script_generate(:generator=>'model').should == "rails destroy model ExampleMorph; rails generate model ExampleMorph noise:string"
     end
   end
 
@@ -181,11 +181,11 @@ describe Morph do
     end
 
     it 'should generate rails model generator script line' do
-      @morphed_class.script_generate.should == "ruby script/destroy rspec_model ExampleMorph; ruby script/generate rspec_model ExampleMorph drink:string milk:string sugars:string"
+      @morphed_class.script_generate.should == "rails destroy model ExampleMorph; rails generate model ExampleMorph drink:string milk:string sugars:string"
     end
 
     it 'should generate rails model generator script line' do
-      @morphed_class.script_generate(:generator=>'model').should == "ruby script/destroy model ExampleMorph; ruby script/generate model ExampleMorph drink:string milk:string sugars:string"
+      @morphed_class.script_generate(:generator=>'model').should == "rails destroy model ExampleMorph; rails generate model ExampleMorph drink:string milk:string sugars:string"
     end
   end
 

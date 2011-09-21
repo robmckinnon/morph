@@ -1,29 +1,34 @@
 require 'rubygems'
-require 'lib/morph'
+require './lib/morph'
 
 begin
-  require 'spec'
+  require 'rspec'
 rescue LoadError
   puts "\nYou need to install the rspec gem to perform meta operations on this gem"
-  puts "  sudo gem install rspec\n"
+  puts "  gem install rspec\n"
 end
 
 begin
   require 'echoe'
 
-  Echoe.new("morph", Morph::VERSION) do |m|
+  Echoe.new("morph") do |m|
     m.author = ["Rob McKinnon"]
     m.email = ["rob ~@nospam@~ rubyforge.org"]
+    m.summary = 'Morph mixin allows you to emerge class definitions via calling assignment methods.'
     m.description = File.readlines("README").first
-    m.rubyforge_name = "morph"
+    m.url = 'https://github.com/robmckinnon/morph'
+    m.install_message = 'Read usage examples at: https://github.com/robmckinnon/morph#readme'
+    m.version = Morph::VERSION
+    m.project = "morph"
     m.rdoc_options << '--inline-source'
     m.rdoc_pattern = ["README", "CHANGELOG", "LICENSE"]
-    m.dependencies = ["activesupport >=2.0.2"]
+    m.runtime_dependencies = ["activesupport >=2.0.2"]
+    m.development_dependencies = ['rspec','echoe']
   end
 
 rescue LoadError
   puts "\nYou need to install the echoe gem to perform meta operations on this gem"
-  puts "  sudo gem install echoe\n\n"
+  puts "  gem install echoe\n\n"
 end
 
 desc "Open an irb session preloaded with this library"

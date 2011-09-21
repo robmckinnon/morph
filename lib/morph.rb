@@ -18,7 +18,7 @@ rescue Exception => e
 end
 
 module Morph
-  VERSION = "0.3.2" unless defined? Morph::VERSION
+  VERSION = "0.3.3" unless defined? Morph::VERSION
 
   class << self
     def generate_migrations object, options={}
@@ -119,8 +119,10 @@ module Morph
             when Hash
               options[:belongs_to_id] = " #{name}_id:integer"
               migrations = add_migration(attribute, value, migrations, options)
+            when nil
+              # ignore
             else
-              puts 'hi'
+              puts 'not supported ' + value.inspect
           end
         end
         migrations
@@ -205,20 +207,11 @@ module Morph
       class_eval { define_method name, &block }
     end
 
-    def show_ruby
-      begin
-        require 'ruby2ruby'
-        puts Ruby2Ruby.translate(self)
-      rescue LoadError
-        puts "You need to install the ruby2ruby gem before calling show_ruby"
-      end
-    end
-
     def script_generate options={}
       name = self.name.to_s.split('::').last
       name = yield name if block_given?
-      generator = options[:generator] || 'rspec_model'
-      line = ["ruby script/destroy #{generator} #{name}; ruby script/generate #{generator} #{name}"]
+      generator = options[:generator] || 'model'
+      line = ["rails destroy #{generator} #{name}; rails generate #{generator} #{name}"]
       morph_methods.select{|m| not(m =~ /=$/) }.each {|attribute| line << " #{attribute}:string"}
       line.join('')
     end

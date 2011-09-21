@@ -1,5 +1,37 @@
-Morph allows you to emerge class definitions via calling assignment methods; mix with Nokogiri for screen scraping fun.
+Morph mixin allows you to emerge class definitions via calling assignment methods; mix with Nokogiri for screen scraping fun.
 
+
+== Morph creating classes +from_csv+
+
+Here's example code showing Morph playing with CSV (comma-separated values):
+
+ require 'rubygems'; require 'morph'
+
+ csv = %Q[name,party\nTed Roe,red\nAli Davidson,blue\nSue Smith,green]
+
+ people = Morph.from_csv(csv, 'person')
+ # => [#<Morph::Person @name="Ted Roe", @party="red">,
+       #<Morph::Person @name="Ali Davidson", @party="blue">,
+       #<Morph::Person @name="Sue Smith", @party="green">]
+
+ people.last.party
+ # => "green"
+
+== Morph creating classes +from_tsv+
+
+Here's example code showing Morph playing with TSV (tab-separated values):
+
+ require 'rubygems'; require 'morph'
+
+ tsv = %Q[name\tparty\nTed Roe\tred\nAli Davidson\tblue\nSue Smith\tgreen]
+
+ people = Morph.from_tsv(tsv, 'person')
+ # => [#<Morph::Person @name="Ted Roe", @party="red">,
+       #<Morph::Person @name="Ali Davidson", @party="blue">,
+       #<Morph::Person @name="Sue Smith", @party="green">]
+
+ people.last.party
+ # => "green"
 
 == Morph creating classes +from_xml+
 
@@ -23,22 +55,6 @@ Here's example code showing Morph playing with XML:
 
  councils.first.name
  # => "Aberdeen City Council"
-
-== Morph creating classes +from_tsv+
-
-Here's example code showing Morph playing with TSV (tab-separated values):
-
- require 'rubygems'; require 'morph'
-
- tsv = %Q[name\tparty\nTed Roe\tred\nAli Davidson\tblue\nSue Smith\tgreen]
-
- people = Morph.from_tsv(tsv, 'person')
- # => [#<Morph::Person @name="Ted Roe", @party="red">,
-       #<Morph::Person @name="Ali Davidson", @party="blue">,
-       #<Morph::Person @name="Sue Smith", @party="green">]
-
- people.last.party
- # => "green"
 
 == Morph playing with +Nokogiri+
 
@@ -121,16 +137,17 @@ So, a new company method has appeared:
 Time to generate an Active Record model? Get a sample script line like this:
 
  Hubbit.script_generate
- # => "ruby script/destroy rspec_model Hubbit;
- #    ruby script/generate rspec_model Hubbit blog:string company:string
- #        email:string location:string name:string projects:string"
+ #=> "rails destroy model Hubbit;
+ #    rails generate model Hubbit company:string email:string location:string
+ #          member_since:string name:string projects:string website_blog:string"
 
 or specify the generator:
 
- Hubbit.script_generate :generator => 'model'
- # => "ruby script/destroy model Hubbit;
- #     ruby script/generate model Hubbit blog:string company:string
- #         email:string location:string name:string projects:string"
+ Hubbit.script_generate :generator => 'rspec_model'
+ #=> "rails destroy rspec_model Hubbit;
+ #    rails generate rspec_model Hubbit company:string email:string
+ #          location:string member_since:string name:string projects:string
+ #          website_blog:string"
 
 You'll have to edit this as it currently sets all data types to be string, and
 doesn't understand associations.
