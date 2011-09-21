@@ -1,4 +1,4 @@
-Morph allows you to emerge class definitions via calling assignment methods; mix with Hpricot for screen scraping fun.
+Morph allows you to emerge class definitions via calling assignment methods; mix with Nokogiri for screen scraping fun.
 
 
 == Morph creating classes +from_xml+
@@ -40,30 +40,35 @@ Here's example code showing Morph playing with TSV (tab-separated values):
  people.last.party
  # => "green"
 
-== Morph playing with +Hpricot+
+== Morph playing with +Nokogiri+
 
-Here's example code showing Morph playing with Hpricot:
+Here's example code showing Morph playing with Nokogiri in Ruby 1.9.2:
 
- require 'rubygems'; require 'hpricot'; require 'open-uri'
+ require 'rubygems'; require 'nokogiri'; require 'open-uri'
  require 'morph'
 
  class Hubbit
    include Morph  # allows class to morph
 
    def initialize name
-     doc = Hpricot open("http://github.com/#{name}")
+     doc = Nokogiri::HTML open("https://github.com/#{name}")
 
-     (doc/'label').collect do |node|
+     profile_fields = doc.search('.vcard dt')
+
+     profile_fields.each do |node|
        label = node.inner_text
-       value = node.next_sibling.inner_text.strip
+       value = node.next_element.inner_text.strip
 
-       morph(label, value)  # morph magic happening here!
+       morph(label, value)  # morph magic adds accessor methods!
      end
+   end
+
+   def member_since_date
+     Date.parse member_since
    end
  end
 
  def Hubbit name; Hubbit.new name; end
-
 
 The model emerges from the data. Let's start by looking up 'why':
 
@@ -71,11 +76,16 @@ The model emerges from the data. Let's start by looking up 'why':
 
 What new methods do we have?
 
- Hubbit.morph_methods # => ["email", "email=", "name", "name="]
+ Hubbit.morph_methods.map {|m| m.to_s}
+ #=> ["location", "location=", "member_since", "member_since=", "name", "name="]
 
 Ah-ha, so we have a name attribute now:
 
- why.name # => "why the lucky stiff"
+ why.name # => "Squatting until _why gets home."
+
+We wrote a +member_since_date+ method in our class, let's call that now:
+
+ why.member_since_date # => Wed, 19 Aug 2009
 
 
 Let's add some of why's projects:
@@ -85,8 +95,9 @@ Let's add some of why's projects:
 
 That why's a productive fellow! Note new accessor methods have been added:
 
- Hubbit.morph_methods
- # => ["email", "email=", "name", "name=", "projects", "projects="]
+ Hubbit.morph_methods.map {|m| m.to_s}
+ #=> ["location", "location=", "member_since", "member_since=", "name", "name=",
+ #    "projects", "projects="]
 
 
 Let's do some more morphing:
@@ -95,9 +106,10 @@ Let's do some more morphing:
 
 Do we have more methods now?
 
- Hubbit.morph_methods
- # => ["blog", "blog=", "company", "company=", "email", "email=",
- #    "location", "location=" "name", "name=", "projects", "projects="]
+ Hubbit.morph_methods.map {|m| m.to_s}
+ #=> ["company", "company=", "email", "email=", "location", "location=",
+ #    "member_since", "member_since=", "name", "name=", "projects", "projects=",
+ #    "website_blog", "website_blog="]
 
 So, a new company method has appeared:
 
