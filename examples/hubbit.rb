@@ -1,25 +1,26 @@
 require 'morph'
 
-require 'rubygems'; require 'hpricot'; require 'open-uri'
+require 'rubygems'; require 'nokogiri'; require 'open-uri'
 
-# An example of Morph playing with Hpricot
+# An example of Morph playing with Nokogiri
 class Hubbit
-
-  include Morph
+  include Morph  # allows class to morph
 
   def initialize name
-    begin
-      doc = Hpricot open("http://github.com/#{name}")
+    doc = Nokogiri::HTML open("https://github.com/#{name}")
 
-      (doc/'label').collect do |node|
-        label = node.inner_text
-        value = node.next_sibling.inner_text.strip
+    profile_fields = doc.search('.vcard dt')
 
-        morph(label, value) # magic morphing happening here!
-      end
-    rescue
-      raise "Couldn't find hubbit with name: #{name}"
+    profile_fields.each do |node|
+      label = node.inner_text
+      value = node.next_element.inner_text.strip
+
+      morph(label, value)  # morph magic adds accessor methods!
     end
+  end
+
+  def member_since_date
+    Date.parse member_since
   end
 end
 
