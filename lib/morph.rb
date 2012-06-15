@@ -274,7 +274,7 @@ module Morph
     end
 
     def morph_attributes
-      attributes = self.class.morph_methods.inject({}) do |hash, attribute|
+      attributes = self.class.morph_attributes.inject({}) do |hash, attribute|
         unless attribute =~ /=\Z/
           symbol = attribute.to_sym
           value = send(symbol)
