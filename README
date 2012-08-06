@@ -1,5 +1,7 @@
-Morph mixin allows you to emerge class definitions via calling assignment methods; mix with Nokogiri for screen scraping fun.
+Morph mixin allows you to emerge class definitions from data via calling assignment methods.
 
+# morph [![Build Status](https://secure.travis-ci.org/robmckinnon/morph.png)](http://travis-ci.org/robmckinnon/morph)
+{ <img src="http://api.coderwall.com/robmckinnon/endorsecount.png" alt="Coderwall Endorse"> }[http://coderwall.com/robmckinnon]
 
 == Morph creating classes +from_csv+
 

@@ -5,3 +5,5 @@ doc
 .DS_Store
 *~
 .autotest
+.rvmrc
+Gemfile.lock
