@@ -10,6 +10,7 @@ group :development do
   gem 'arrayfields'
   gem 'map'
   gem 'metrical'
+  gem 'echoe'
 end
 
 gem 'active_support' if RUBY_VERSION >= '1.9'
