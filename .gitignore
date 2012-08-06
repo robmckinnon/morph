@@ -7,3 +7,4 @@ doc
 .autotest
 .rvmrc
 Gemfile.lock
+tmp
