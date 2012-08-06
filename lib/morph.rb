@@ -183,20 +183,29 @@ module Morph
 
   module ClassMethods
 
-    @@adding_morph_method = Hash.new {|hash,klass| hash[klass] = false }
-    @@morph_methods = Hash.new {|hash,klass| hash[klass] = {} }
-    @@morph_attributes = Hash.new {|hash,klass| hash[klass] = [] }
+    @@adding_morph_method = Hash.new {|hash,klass| hash[klass] = false } unless defined?(@@adding_morph_method)
+    @@morph_methods = Hash.new {|hash,klass| hash[klass] = {} } unless defined?(@@morph_methods)
+    @@morph_attributes = Hash.new {|hash,klass| hash[klass] = [] } unless defined?(@@morph_attributes)
 
     def morph_attributes
-      @@morph_attributes[self] + []
+      if superclass.respond_to?(:morph_attributes)
+        @@morph_attributes[self] + superclass.morph_attributes
+      else
+        @@morph_attributes[self] + []
+      end
     end
 
     def morph_methods
-      if RUBY_VERSION >= "1.9"
+      methods = if RUBY_VERSION >= "1.9"
         @@morph_methods[self].keys.sort.map(&:to_sym)
       else
         @@morph_methods[self].keys.sort
       end
+
+      if superclass.respond_to?(:morph_attributes)
+        methods += superclass.morph_methods
+      end
+      methods
     end
 
     def adding_morph_method= true_or_false

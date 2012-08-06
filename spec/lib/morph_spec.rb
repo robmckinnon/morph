@@ -28,39 +28,45 @@ describe Morph do
     let(:attribute) { 'noise' }
     let(:expected_morph_methods_count) { 2 }
 
-    before do
-      remove_morph_methods
-      @morph.noise = quack
-    end
-
-    it_should_behave_like "class with generated accessor methods added"
-
-    it 'should return assigned value when reader method called' do
-      @morph.noise.should == quack
-    end
-
-    it 'should return hash of attributes when morph_attributes called' do
-      @morph.morph_attributes.should == {attribute.to_sym => quack}
-    end
-
-    it 'should generate rails model generator script line, with given model name' do
-      morphed_class.script_generate {|model_name| 'SomethingDifferent'}.should == "rails destroy model SomethingDifferent; rails generate model SomethingDifferent noise:string"
-    end
-
-    it 'should generate rails model generator script line' do
-      morphed_class.script_generate.should == "rails destroy model ExampleMorph; rails generate model ExampleMorph noise:string"
-    end
-
-    it 'should generate rails model generator script line' do
-      morphed_class.script_generate(:generator=>'model').should == "rails destroy model ExampleMorph; rails generate model ExampleMorph noise:string"
-    end
-
-    context 'and morph class is extended by class including Morph' do
+    context do
       before do
-        @extended_morph = extended_morph
+        remove_morph_methods
+        @morph.noise = quack
       end
 
       it_should_behave_like "class with generated accessor methods added"
+
+      it 'should return assigned value when reader method called' do
+        @morph.noise.should == quack
+      end
+
+      it 'should return hash of attributes when morph_attributes called' do
+        @morph.morph_attributes.should == {attribute.to_sym => quack}
+      end
+
+      it 'should generate rails model generator script line, with given model name' do
+        morphed_class.script_generate {|model_name| 'SomethingDifferent'}.should == "rails destroy model SomethingDifferent; rails generate model SomethingDifferent noise:string"
+      end
+
+      it 'should generate rails model generator script line' do
+        morphed_class.script_generate.should == "rails destroy model ExampleMorph; rails generate model ExampleMorph noise:string"
+      end
+
+      it 'should generate rails model generator script line' do
+        morphed_class.script_generate(:generator=>'model').should == "rails destroy model ExampleMorph; rails generate model ExampleMorph noise:string"
+      end
+    end
+
+    context 'and morph class is extended by class including Morph' do
+      def self.extended_class
+        eval('class ExampleMorph; include Morph; end')
+        @morph = ExampleMorph.new
+        @morph.noise = 'quack'
+        eval('class ExtendedMorph < ExampleMorph; include Morph; end')
+        ExtendedMorph
+      end
+
+      it_should_behave_like "class with generated accessor methods added", extended_class
     end
   end
 

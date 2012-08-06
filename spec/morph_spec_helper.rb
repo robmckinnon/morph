@@ -37,12 +37,12 @@ module MorphSpecHelperMethods
     end
   end
 
-  def instance_methods
-    morphed_class.instance_methods
+  def instance_methods klass=morphed_class
+    klass.instance_methods
   end
 
-  def morph_methods
-    morphed_class.morph_methods
+  def morph_methods klass=morphed_class
+    klass.morph_methods
   end
 
   def check_convert_to_morph_method_name label, method_name
@@ -60,42 +60,46 @@ module MorphSpecHelperMethods
   end
 end
 
-shared_examples_for "class with generated accessor methods added" do
+shared_examples_for "class with generated accessor methods added" do |klass|
+
+  before do
+    klass = morphed_class unless klass
+  end
 
   it 'should add reader method to class instance_methods list' do
     if RUBY_VERSION >= "1.9"
-      each_attribute { |a| instance_methods.should include(a.to_s.to_sym) }
+      each_attribute { |a| instance_methods(klass).should include(a.to_s.to_sym) }
     else
-      each_attribute { |a| instance_methods.should include(a.to_s) }
+      each_attribute { |a| instance_methods(klass).should include(a.to_s) }
     end
   end
 
   it 'should add writer method to class instance_methods list' do
     if RUBY_VERSION >= "1.9"
-      each_attribute { |a| instance_methods.should include("#{a}=".to_sym) }
+      each_attribute { |a| instance_methods(klass).should include("#{a}=".to_sym) }
     else
-      each_attribute { |a| instance_methods.should include("#{a}=") }
+      each_attribute { |a| instance_methods(klass).should include("#{a}=") }
     end
   end
 
   it 'should add reader method to class morph_methods list' do
     if RUBY_VERSION >= "1.9"
-      each_attribute { |a| morph_methods.should include(a.to_s.to_sym) }
+      each_attribute { |a| morph_methods(klass).should include(a.to_s.to_sym) }
     else
-      each_attribute { |a| morph_methods.should include(a.to_s) }
+      each_attribute { |a| morph_methods(klass).should include(a.to_s) }
     end
   end
 
   it 'should add writer method to class morph_methods list' do
     if RUBY_VERSION >= "1.9"
-      each_attribute { |a| morph_methods.should include("#{a}=".to_sym) }
+      each_attribute { |a| morph_methods(klass).should include("#{a}=".to_sym) }
     else
-      each_attribute { |a| morph_methods.should include("#{a}=") }
+      each_attribute { |a| morph_methods(klass).should include("#{a}=") }
     end
   end
 
   it 'should only have generated accessor methods in morph_methods list' do
-    morph_methods.size.should == expected_morph_methods_count
+    morph_methods(klass).size.should == expected_morph_methods_count
   end
 
 end
