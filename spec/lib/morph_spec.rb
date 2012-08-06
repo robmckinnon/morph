@@ -5,17 +5,20 @@ describe Morph do
   include MorphSpecHelperMethods
 
   let(:attribute) { nil }
-  let(:morph_class_code)         { 'class ExampleMorph; include Morph; end' }
-  let(:another_morph_class_code) { 'class AnotherMorph; include Morph; end' }
+  let(:morph_class_code)          { 'class ExampleMorph; include Morph; end' }
+  let(:another_morph_class_code)  { 'class AnotherMorph; include Morph; end' }
+  let(:extended_morph_class_code) { 'class ExtendedMorph < ExampleMorph; include Morph; end' }
 
   let(:morphed_class) { eval(morph_class_code) ; ExampleMorph }
   let(:another_morphed_class) { eval(another_morph_class_code) ; AnotherMorph }
+  let(:extended_morphed_class) { eval(extended_morph_class_code) ; ExtendedMorph }
 
   let(:original_instance_methods) { morphed_class.instance_methods }
   let(:more_original_instance_methods) { another_morphed_class.instance_methods }
 
   let(:morph) { morphed_class.new }
   let(:another_morph) { another_morphed_class.new }
+  let(:extended_morph) { extended_morphed_class.new }
 
   describe "when writer method that didn't exist before is called with non-nil value" do
     before(:all) { initialize_morph }
@@ -54,10 +57,12 @@ describe Morph do
   end
 
   describe "when writer method that didn't exist before is called with nil value" do
+    after(:all)  { remove_morph_methods }
+
     let(:attribute) { 'noise' }
 
-    before do
-      remove_morph_methods
+    before(:all) do
+      initialize_morph
       @morph.noise= nil
     end
 
@@ -144,10 +149,12 @@ describe Morph do
   end
 
   describe "when writer method that didn't exist before is called with blank space attribute value" do
+    after(:all)  { remove_morph_methods }
+
     let(:attribute) { 'noise' }
 
-    before do
-      remove_morph_methods
+    before(:all) do
+      initialize_morph
       @morph.noise = '   '
     end
 
@@ -253,10 +260,12 @@ describe Morph do
 =end
 
   describe 'when morph method used to set blank space attribute value' do
+    after(:all)  { remove_morph_methods }
+
     let(:attribute) { 'pizza' }
 
-    before do
-      remove_morph_methods
+    before(:all) do
+      initialize_morph
       @morph.morph('Pizza', '   ')
     end
 
@@ -264,10 +273,12 @@ describe Morph do
   end
 
   describe 'when morph method used to set nil attribute value' do
+    after(:all)  { remove_morph_methods }
+
     let(:attribute) { 'pizza' }
 
-    before do
-      remove_morph_methods
+    before(:all) do
+      initialize_morph
       @morph.morph('Pizza', nil)
     end
 

@@ -58,9 +58,6 @@ end
 
 shared_examples_for "class with generated accessor methods added" do
 
-  before(:all) { initialize_morph }
-  after(:all)  { remove_morph_methods }
-
   it 'should add reader method to class instance_methods list' do
     if RUBY_VERSION >= "1.9"
       each_attribute { |a| instance_methods.should include(a.to_s.to_sym) }
@@ -100,9 +97,6 @@ shared_examples_for "class with generated accessor methods added" do
 end
 
 shared_examples_for "class without generated accessor methods added" do
-
-  before(:all) { initialize_morph }
-  after(:all)  { remove_morph_methods }
 
   it 'should not add reader method to class instance_methods list' do
     instance_methods.should_not include(attribute)
