@@ -22,7 +22,7 @@ describe Morph do
 
   describe "when writer method that didn't exist before is called with non-nil value" do
     before(:all) { initialize_morph }
-    after(:all)  { remove_morph_methods }
+    after(:all)  { unload_morph_class }
 
     let(:quack)     { 'quack' }
     let(:attribute) { 'noise' }
@@ -54,10 +54,18 @@ describe Morph do
     it 'should generate rails model generator script line' do
       morphed_class.script_generate(:generator=>'model').should == "rails destroy model ExampleMorph; rails generate model ExampleMorph noise:string"
     end
+
+    context 'and morph class is extended by class including Morph' do
+      before do
+        @extended_morph = extended_morph
+      end
+
+      it_should_behave_like "class with generated accessor methods added"
+    end
   end
 
   describe "when writer method that didn't exist before is called with nil value" do
-    after(:all)  { remove_morph_methods }
+    after(:all)  { unload_morph_class }
 
     let(:attribute) { 'noise' }
 
@@ -131,7 +139,7 @@ describe Morph do
       attributes.should == [:every, :loose]
     end
 
-    after :each do
+    after do
       remove_morph_methods
       remove_another_morph_methods
     end
@@ -139,7 +147,7 @@ describe Morph do
 
   describe "when class definition contains methods and morph is included" do
     before { initialize_morph }
-    after  { remove_morph_methods ; morphed_class.class_eval "remove_method :happy" }
+    after  { unload_morph_class }
 
     let(:morph_class_code) { "class ExampleMorph\n include Morph\n def happy\n 'happy, joy, joy'\n end\n end" }
 
@@ -149,7 +157,7 @@ describe Morph do
   end
 
   describe "when writer method that didn't exist before is called with blank space attribute value" do
-    after(:all)  { remove_morph_methods }
+    after(:all)  { unload_morph_class }
 
     let(:attribute) { 'noise' }
 
@@ -163,7 +171,7 @@ describe Morph do
 
   describe 'when morph method used to set attribute value' do
     before(:all) { initialize_morph }
-    after(:all)  { remove_morph_methods }
+    after(:all)  { unload_morph_class }
 
     let(:attribute) { 'reading' }
     let(:value)     { '20 Mar 2008' }
@@ -183,7 +191,7 @@ describe Morph do
 
   describe 'when morph method used to set an attribute value hash' do
     before(:all) { initialize_morph }
-    after(:all)  { remove_morph_methods }
+    after(:all)  { unload_morph_class }
 
     let(:expected_morph_methods_count) { 6 }
     let(:attributes) { [:drink,:sugars,:milk] }
@@ -213,7 +221,7 @@ describe Morph do
 =begin
   describe "when morph method used to set unicode attribute name with a value" do
     before(:all) { initialize_morph }
-    after(:all)  { remove_morph_methods }
+    after(:all)  { unload_morph_class }
 
     before do
       $KCODE = "u" unless RUBY_VERSION >= "1.9"
@@ -236,7 +244,7 @@ describe Morph do
   end
   describe "when morph method used to set japanese and latin unicode attribute name with a value" do
     before :all do initialize_morph; end
-    after  :all do remove_morph_methods; end
+    after  :all do unload_morph_class; end
 
     before do
       $KCODE = "u" unless RUBY_VERSION >= "1.9"
@@ -260,7 +268,7 @@ describe Morph do
 =end
 
   describe 'when morph method used to set blank space attribute value' do
-    after(:all)  { remove_morph_methods }
+    after(:all)  { unload_morph_class }
 
     let(:attribute) { 'pizza' }
 
@@ -273,7 +281,7 @@ describe Morph do
   end
 
   describe 'when morph method used to set nil attribute value' do
-    after(:all)  { remove_morph_methods }
+    after(:all)  { unload_morph_class }
 
     let(:attribute) { 'pizza' }
 
@@ -305,7 +313,7 @@ describe Morph do
   describe "when writer method called matches a class reader method" do
 
     before(:all) { initialize_morph }
-    after(:all)  { remove_morph_methods }
+    after(:all)  { unload_morph_class }
 
     let(:attribute) { 'name' }
     let(:value)     { 'Morph' }
@@ -326,7 +334,7 @@ describe Morph do
 
   describe "when class= is called" do
     before(:all) { initialize_morph }
-    after(:all)  { remove_morph_methods }
+    after(:all)  { unload_morph_class }
 
     it 'should throw exception if non nil object is passed' do
       lambda { @morph.class = 'Red' }.should raise_error(/cannot create accessor methods/)
@@ -339,7 +347,7 @@ describe Morph do
 
   describe 'when passing block to morph_method_missing' do
     before(:all) { initialize_morph }
-    after(:all)  { remove_morph_methods }
+    after(:all)  { unload_morph_class }
 
     it 'should class_eval the block' do
       @morph.morph_method_missing(:chunky, 'bacon') do |base, attribute|

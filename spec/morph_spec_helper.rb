@@ -24,7 +24,11 @@ module MorphSpecHelperMethods
         raise e.to_s + e.backtrace.join("\n") + '------' + (@original_instance_methods ? @original_instance_methods.sort.inspect : '')
       end
 
-    end if morphed_class
+    end
+  end
+
+  def unload_morph_class
+    Object.send(:remove_const, morphed_class.name.to_sym)
   end
 
   def remove_another_morph_methods
