@@ -62,8 +62,8 @@ module MorphSpecHelperMethods
   end
 
   def each_attribute
-    if @attribute
-      yield @attribute
+    if attribute
+      yield attribute
     elsif @attributes
       @attributes.each {|a| yield a }
     end
@@ -109,7 +109,7 @@ shared_examples_for "class with generated accessor methods added" do
   end
 
   it 'should only have generated accessor methods in morph_methods list' do
-    morph_methods.size.should == @expected_morph_methods_count
+    morph_methods.size.should == expected_morph_methods_count
   end
 
 end
@@ -126,19 +126,19 @@ shared_examples_for "class without generated accessor methods added" do
   end
 
   it 'should not add reader method to class instance_methods list' do
-    instance_methods.should_not include(@attribute)
+    instance_methods.should_not include(attribute)
   end
 
   it 'should not add writer method to class instance_methods list' do
-    instance_methods.should_not include("#{@attribute}=")
+    instance_methods.should_not include("#{attribute}=")
   end
 
   it 'should not add reader method to class morph_methods list' do
-    morph_methods.should_not include(@attribute)
+    morph_methods.should_not include(attribute)
   end
 
   it 'should not add writer method to class morph_methods list' do
-    morph_methods.should_not include("#{@attribute}=")
+    morph_methods.should_not include("#{attribute}=")
   end
 
   it 'should have empty morph_methods list' do

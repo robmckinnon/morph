@@ -4,26 +4,29 @@ require File.dirname(__FILE__) + '/../morph_spec_helper'
 describe Morph do
   include MorphSpecHelperMethods
 
-  describe "when writer method that didn't exist before is called with non-nil value" do
-    before :all do initialize_morph; end
-    after  :all do remove_morph_methods; end
+  let(:attribute) { nil }
 
-    before :each do
+  describe "when writer method that didn't exist before is called with non-nil value" do
+    before(:all) { initialize_morph }
+    after(:all)  { remove_morph_methods }
+
+    let(:quack)     { 'quack' }
+    let(:attribute) { 'noise' }
+    let(:expected_morph_methods_count) { 2 }
+
+    before do
       remove_morph_methods
-      @quack = 'quack'
-      @morph.noise= @quack
-      @attribute = 'noise'
-      @expected_morph_methods_count = 2
+      @morph.noise = quack
     end
 
     it_should_behave_like "class with generated accessor methods added"
 
     it 'should return assigned value when reader method called' do
-      @morph.noise.should == @quack
+      @morph.noise.should == quack
     end
 
     it 'should return hash of attributes when morph_attributes called' do
-      @morph.morph_attributes.should == {@attribute.to_sym => @quack}
+      @morph.morph_attributes.should == {attribute.to_sym => quack}
     end
 
     it 'should generate rails model generator script line, with given model name' do
@@ -40,10 +43,11 @@ describe Morph do
   end
 
   describe "when writer method that didn't exist before is called with nil value" do
-    before :each do
+    let(:attribute) { 'noise' }
+
+    before do
       remove_morph_methods
       @morph.noise= nil
-      @attribute = 'noise'
     end
 
     it_should_behave_like "class without generated accessor methods added"
@@ -52,7 +56,7 @@ describe Morph do
   describe "when different writer method called on two different morph classes" do
     include MorphSpecHelperMethods
 
-    before :each do
+    before do
       initialize_morph
       initialize_another_morph
     end
@@ -133,43 +137,46 @@ describe Morph do
   end
 
   describe "when writer method that didn't exist before is called with blank space attribute value" do
-    before :each do
+    let(:attribute) { 'noise' }
+
+    before do
       remove_morph_methods
       @morph.noise= '   '
-      @attribute = 'noise'
     end
 
     it_should_behave_like "class without generated accessor methods added"
   end
 
   describe 'when morph method used to set attribute value' do
-    before :all do initialize_morph; end
-    after  :all do remove_morph_methods; end
+    before(:all) { initialize_morph }
+    after(:all)  { remove_morph_methods }
 
-    before :each do
+    let(:attribute) { 'reading' }
+    let(:value)     { '20 Mar 2008' }
+    let(:expected_morph_methods_count) { 2 }
+
+    before do
       remove_morph_methods
-      @value = '20 Mar 2008'
-      @morph.morph('Reading', @value)
-      @attribute = 'reading'
-      @expected_morph_methods_count = 2
+      @morph.morph('Reading', value)
     end
 
     it_should_behave_like "class with generated accessor methods added"
 
     it 'should return assigned value when reader method called' do
-      @morph.reading.should == @value
+      @morph.reading.should == value
     end
   end
 
   describe 'when morph method used to set an attribute value hash' do
-    before :all do initialize_morph; end
-    after  :all do remove_morph_methods; end
+    before(:all) { initialize_morph }
+    after(:all)  { remove_morph_methods }
 
-    before :each do
+    let(:expected_morph_methods_count) { 6 }
+
+    before do
       remove_morph_methods
       @attributes = [:drink,:sugars,:milk]
       @morph.morph :drink => 'tea', :sugars => 2, :milk => 'yes please'
-      @expected_morph_methods_count = 6
     end
 
     it_should_behave_like "class with generated accessor methods added"
@@ -191,10 +198,10 @@ describe Morph do
 
 =begin
   describe "when morph method used to set unicode attribute name with a value" do
-    before :all do initialize_morph; end
-    after  :all do remove_morph_methods; end
+    before(:all) { initialize_morph }
+    after(:all)  { remove_morph_methods }
 
-    before :each do
+    before do
       $KCODE = "u" unless RUBY_VERSION >= "1.9"
       remove_morph_methods
       @age = 19
@@ -217,7 +224,7 @@ describe Morph do
     before :all do initialize_morph; end
     after  :all do remove_morph_methods; end
 
-    before :each do
+    before do
       $KCODE = "u" unless RUBY_VERSION >= "1.9"
       remove_morph_methods
       @age = 19
@@ -237,21 +244,24 @@ describe Morph do
     end
   end
 =end
+
   describe 'when morph method used to set blank space attribute value' do
-    before :each do
+    let(:attribute) { 'pizza' }
+
+    before do
       remove_morph_methods
       @morph.morph('Pizza', '   ')
-      @attribute = 'pizza'
     end
 
     it_should_behave_like "class without generated accessor methods added"
   end
 
   describe 'when morph method used to set nil attribute value' do
-    before :each do
+    let(:attribute) { 'pizza' }
+
+    before do
       remove_morph_methods
       @morph.morph('Pizza', nil)
-      @attribute = 'pizza'
     end
 
     it_should_behave_like "class without generated accessor methods added"
@@ -280,30 +290,29 @@ describe Morph do
 
   describe "when writer method called matches a class reader method" do
 
-    before :all do initialize_morph; end
-    after  :all do remove_morph_methods; end
+    before(:all) { initialize_morph }
+    after(:all)  { remove_morph_methods }
 
-    before :each do
+    let(:attribute) { 'name' }
+    let(:value)     { 'Morph' }
+    let(:expected_morph_methods_count) { 2 }
+
+    before do
       remove_morph_methods
-      @value = 'Morph'
-      @morph.name = @value
-      @attribute = 'name'
-      @expected_morph_methods_count = 2
+      @morph.name = value
     end
 
     it_should_behave_like "class with generated accessor methods added"
 
     it 'should return assigned value when reader method called' do
-      @morph.name.should == @value
+      @morph.name.should == value
     end
   end
 
 
   describe "when class= is called" do
-
-    include MorphSpecHelperMethods
-    before :all do initialize_morph; end
-    after  :all do remove_morph_methods; end
+    before(:all) { initialize_morph }
+    after(:all)  { remove_morph_methods }
 
     it 'should throw exception if non nil object is passed' do
       lambda { @morph.class = 'Red' }.should raise_error(/cannot create accessor methods/)
@@ -315,10 +324,8 @@ describe Morph do
   end
 
   describe 'when passing block to morph_method_missing' do
-
-    include MorphSpecHelperMethods
-    before :all do initialize_morph; end
-    after  :each do remove_morph_methods; end
+    before(:all) { initialize_morph }
+    after(:all)  { remove_morph_methods }
 
     it 'should class_eval the block' do
       @morph.morph_method_missing(:chunky, 'bacon') do |base, attribute|
@@ -344,44 +351,54 @@ describe Morph do
 
   describe "when converting label text to morph method name" do
 
-    include MorphSpecHelperMethods
-
     it 'should covert dash to underscore' do
       check_convert_to_morph_method_name 'hi-time', 'hi_time'
     end
+
     it 'should upper case to lower case' do
       check_convert_to_morph_method_name 'CaSe', 'case'
     end
+
     it 'should convert single space to underscorce' do
       check_convert_to_morph_method_name 'First reading', 'first_reading'
     end
+
     it 'should convert multiple spaces to single underscorce' do
       check_convert_to_morph_method_name "First  reading", 'first_reading'
     end
+
     it 'should convert tabs to single underscorce' do
       check_convert_to_morph_method_name "First\t\treading", 'first_reading'
     end
+
     it 'should convert new line chars to single underscorce' do
       check_convert_to_morph_method_name "First\r\nreading", 'first_reading'
     end
+
     it 'should remove leading and trailing whitespace new line chars to single underscorce' do
       check_convert_to_morph_method_name " \t\r\nFirst reading \t\r\n", 'first_reading'
     end
+
     it 'should remove trailing colon surrounded by whitespace' do
       check_convert_to_morph_method_name "First reading : ", 'first_reading'
     end
+
     it 'should remove parenthesis' do
       check_convert_to_morph_method_name 'Nav(GBX)', 'nav_gbx'
     end
+
     it 'should remove *' do
       check_convert_to_morph_method_name 'Change**', 'change'
     end
+
     it 'should convert % character to the text "percentage"' do
       check_convert_to_morph_method_name '% Change', 'percentage_change'
     end
+
     it 'should precede leading digit with an underscore character' do
       check_convert_to_morph_method_name '52w_high', '_52w_high'
     end
+
     it 'should handle unicode name' do
       check_convert_to_morph_method_name '年龄', '年龄'
     end
