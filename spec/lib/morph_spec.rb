@@ -5,6 +5,17 @@ describe Morph do
   include MorphSpecHelperMethods
 
   let(:attribute) { nil }
+  let(:morph_class_code)         { 'class ExampleMorph; include Morph; end' }
+  let(:another_morph_class_code) { 'class AnotherMorph; include Morph; end' }
+
+  let(:morphed_class) { eval(morph_class_code) ; ExampleMorph }
+  let(:another_morphed_class) { eval(another_morph_class_code) ; AnotherMorph }
+
+  let(:original_instance_methods) { morphed_class.instance_methods }
+  let(:more_original_instance_methods) { another_morphed_class.instance_methods }
+
+  let(:morph) { morphed_class.new }
+  let(:another_morph) { another_morphed_class.new }
 
   describe "when writer method that didn't exist before is called with non-nil value" do
     before(:all) { initialize_morph }
@@ -30,15 +41,15 @@ describe Morph do
     end
 
     it 'should generate rails model generator script line, with given model name' do
-      @morphed_class.script_generate {|model_name| 'SomethingDifferent'}.should == "rails destroy model SomethingDifferent; rails generate model SomethingDifferent noise:string"
+      morphed_class.script_generate {|model_name| 'SomethingDifferent'}.should == "rails destroy model SomethingDifferent; rails generate model SomethingDifferent noise:string"
     end
 
     it 'should generate rails model generator script line' do
-      @morphed_class.script_generate.should == "rails destroy model ExampleMorph; rails generate model ExampleMorph noise:string"
+      morphed_class.script_generate.should == "rails destroy model ExampleMorph; rails generate model ExampleMorph noise:string"
     end
 
     it 'should generate rails model generator script line' do
-      @morphed_class.script_generate(:generator=>'model').should == "rails destroy model ExampleMorph; rails generate model ExampleMorph noise:string"
+      morphed_class.script_generate(:generator=>'model').should == "rails destroy model ExampleMorph; rails generate model ExampleMorph noise:string"
     end
   end
 
@@ -54,7 +65,6 @@ describe Morph do
   end
 
   describe "when different writer method called on two different morph classes" do
-    include MorphSpecHelperMethods
 
     before do
       initialize_morph
@@ -65,15 +75,15 @@ describe Morph do
       @morph.every = 'where'
       @another_morph.no = 'where'
 
-      @morphed_class.morph_methods.size.should == 2
-      @another_morphed_class.morph_methods.size.should == 2
+      morphed_class.morph_methods.size.should == 2
+      another_morphed_class.morph_methods.size.should == 2
 
       if RUBY_VERSION >= "1.9"
-        @morphed_class.morph_methods.should == [:every,:every=]
-        @another_morphed_class.morph_methods.should == [:no,:no=]
+        morphed_class.morph_methods.should == [:every,:every=]
+        another_morphed_class.morph_methods.should == [:no,:no=]
       else
-        @morphed_class.morph_methods.should == ['every','every=']
-        @another_morphed_class.morph_methods.should == ['no','no=']
+        morphed_class.morph_methods.should == ['every','every=']
+        another_morphed_class.morph_methods.should == ['no','no=']
       end
     end
 
@@ -123,15 +133,12 @@ describe Morph do
   end
 
   describe "when class definition contains methods and morph is included" do
-    include MorphSpecHelperMethods
+    before { initialize_morph }
+    after  { remove_morph_methods ; morphed_class.class_eval "remove_method :happy" }
 
-    after :all do
-      remove_morph_methods
-      @morphed_class.class_eval "remove_method :happy" if @morphed_class
-    end
+    let(:morph_class_code) { "class ExampleMorph\n include Morph\n def happy\n 'happy, joy, joy'\n end\n end" }
 
     it 'should not return methods defined in class in morph_methods list' do
-      initialize_morph "class ExampleMorph\n include Morph\n def happy\n 'happy, joy, joy'\n end\n end"
       morph_methods.should be_empty
     end
   end
@@ -141,7 +148,7 @@ describe Morph do
 
     before do
       remove_morph_methods
-      @morph.noise= '   '
+      @morph.noise = '   '
     end
 
     it_should_behave_like "class without generated accessor methods added"
@@ -172,10 +179,10 @@ describe Morph do
     after(:all)  { remove_morph_methods }
 
     let(:expected_morph_methods_count) { 6 }
+    let(:attributes) { [:drink,:sugars,:milk] }
 
     before do
       remove_morph_methods
-      @attributes = [:drink,:sugars,:milk]
       @morph.morph :drink => 'tea', :sugars => 2, :milk => 'yes please'
     end
 
@@ -188,11 +195,11 @@ describe Morph do
     end
 
     it 'should generate rails model generator script line' do
-      @morphed_class.script_generate.should == "rails destroy model ExampleMorph; rails generate model ExampleMorph drink:string milk:string sugars:string"
+      morphed_class.script_generate.should == "rails destroy model ExampleMorph; rails generate model ExampleMorph drink:string milk:string sugars:string"
     end
 
     it 'should generate rails model generator script line' do
-      @morphed_class.script_generate(:generator=>'model').should == "rails destroy model ExampleMorph; rails generate model ExampleMorph drink:string milk:string sugars:string"
+      morphed_class.script_generate(:generator=>'model').should == "rails destroy model ExampleMorph; rails generate model ExampleMorph drink:string milk:string sugars:string"
     end
   end
 
@@ -270,8 +277,6 @@ describe Morph do
 
   describe "when reader method that didn't exist before is called" do
 
-    include MorphSpecHelperMethods
-
     it 'should raise NoMethodError' do
       initialize_morph
       lambda { @morph.noise }.should raise_error(/undefined method `noise'/)
@@ -279,8 +284,6 @@ describe Morph do
   end
 
   describe "when reader method called that didn't exist before is a class method" do
-
-    include MorphSpecHelperMethods
 
     it 'should raise NoMethodError' do
       initialize_morph
@@ -333,7 +336,7 @@ describe Morph do
       end
       @morph.respond_to?(:chunky).should == true
       @morph.chunky.should == 'spinach'
-      @morphed_class.class_eval "remove_method :chunky"
+      morphed_class.class_eval "remove_method :chunky"
       lambda { @morph.chunky }.should raise_error
     end
 
@@ -343,7 +346,7 @@ describe Morph do
       end
       @morph.respond_to?(:chunky).should == true
       @morph.chunky.should == 'spinach'
-      @morphed_class.class_eval "remove_method :chunky"
+      morphed_class.class_eval "remove_method :chunky"
       lambda { @morph.chunky }.should raise_error
     end
 
