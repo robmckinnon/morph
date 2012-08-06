@@ -6,10 +6,10 @@ group :test do
 end
 
 group :development do
-  gem 'fattr'
-  gem 'arrayfields'
-  gem 'map'
-  gem 'metrical'
+  # gem 'fattr'
+  # gem 'arrayfields'
+  # gem 'map'
+  # gem 'metrical'
   gem 'echoe'
 end
 
