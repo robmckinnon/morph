@@ -13,7 +13,12 @@ group :development do
   gem 'echoe'
 end
 
-gem 'active_support' if RUBY_VERSION >= '1.9'
-gem 'activesupport' if RUBY_VERSION < '1.9'
+
+if RUBY_VERSION < '1.9'
+  gem 'activesupport'
+  gem 'fastercsv'
+else
+  gem 'active_support'
+end
 
 gem 'rake' # required for travis builds
