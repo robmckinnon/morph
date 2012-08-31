@@ -2,47 +2,49 @@ Morph mixin allows you to emerge Ruby class definitions from data via calling as
 
 { <img src="https://secure.travis-ci.org/robmckinnon/morph.png" alt="Travis CI build status"> }[http://travis-ci.org/robmckinnon/morph]
 
-== Installing Morph gem
+== Installing Morph
 
  gem install morph
+
+To use Morph:
+
+ require 'morph'
 
 == Morph creating classes +from_csv+
 
 Here's example code showing Morph playing with CSV (comma-separated values):
 
- require 'morph'
-
  csv = %Q[name,party\nTed Roe,red\nAli Davidson,blue\nSue Smith,green]
 
  people = Morph.from_csv(csv, 'person')
+
  # => [#<Morph::Person @name="Ted Roe", @party="red">,
        #<Morph::Person @name="Ali Davidson", @party="blue">,
        #<Morph::Person @name="Sue Smith", @party="green">]
 
  people.last.party
+
  # => "green"
 
 == Morph creating classes +from_tsv+
 
 Here's example code showing Morph playing with TSV (tab-separated values):
 
- require 'morph'
-
  tsv = %Q[name\tparty\nTed Roe\tred\nAli Davidson\tblue\nSue Smith\tgreen]
 
  people = Morph.from_tsv(tsv, 'person')
+
  # => [#<Morph::Person @name="Ted Roe", @party="red">,
        #<Morph::Person @name="Ali Davidson", @party="blue">,
        #<Morph::Person @name="Sue Smith", @party="green">]
 
  people.last.party
+
  # => "green"
 
 == Morph creating classes +from_xml+
 
 Here's example code showing Morph playing with XML:
-
- require 'morph'
 
  xml = %Q[<?xml version="1.0" encoding="UTF-8"?>
  <councils type="array">
@@ -55,18 +57,20 @@ Here's example code showing Morph playing with XML:
  </councils>]
 
  councils = Morph.from_xml(xml)
+
  # => [#<Morph::Council @code="1", @name="Aberdeen City Council">,
        #<Morph::Council @code="2", @name="Allerdale Borough Council">]
 
  councils.first.name
+
  # => "Aberdeen City Council"
 
 == Morph playing with +Nokogiri+
 
 Here's example code showing Morph playing with Nokogiri in Ruby 1.9.2:
 
- require 'nokogiri'; require 'open-uri'
- require 'morph'
+ require 'morph'; require 'nokogiri'; require 'open-uri'
+
 
  class Hubbit
    include Morph  # allows class to morph
@@ -98,6 +102,7 @@ The model emerges from the data. Let's start by looking up 'why':
 What new methods do we have?
 
  Hubbit.morph_methods.map {|m| m.to_s}
+
  #=> ["location", "location=", "member_since", "member_since=", "name", "name="]
 
 Ah-ha, so we have a name attribute now:
@@ -117,6 +122,7 @@ Let's add some of why's projects:
 That why's a productive fellow! Note new accessor methods have been added:
 
  Hubbit.morph_methods.map {|m| m.to_s}
+
  #=> ["location", "location=", "member_since", "member_since=", "name", "name=",
  #    "projects", "projects="]
 
@@ -128,6 +134,7 @@ Let's do some more morphing:
 Do we have more methods now?
 
  Hubbit.morph_methods.map {|m| m.to_s}
+
  #=> ["company", "company=", "email", "email=", "location", "location=",
  #    "member_since", "member_since=", "name", "name=", "projects", "projects=",
  #    "website_blog", "website_blog="]
@@ -142,6 +149,7 @@ So, a new company method has appeared:
 Time to generate an Active Record model? Get a sample script line like this:
 
  Hubbit.script_generate
+
  #=> "rails destroy model Hubbit;
  #    rails generate model Hubbit company:string email:string location:string
  #          member_since:string name:string projects:string website_blog:string"
@@ -149,6 +157,7 @@ Time to generate an Active Record model? Get a sample script line like this:
 or specify the generator:
 
  Hubbit.script_generate :generator => 'rspec_model'
+
  #=> "rails destroy rspec_model Hubbit;
  #    rails generate rspec_model Hubbit company:string email:string
  #          location:string member_since:string name:string projects:string
@@ -192,6 +201,7 @@ Now an order:
 Want to retrieve all that as a nested hash of values? No problem:
 
  order.morph_attributes
+
  # => {:items=>[{:name=>"spinach", :cost=>0.5}], :no=>123}
 
 
