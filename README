@@ -10,7 +10,7 @@ Morph mixin allows you to emerge Ruby class definitions from data via calling as
 
 Here's example code showing Morph playing with CSV (comma-separated values):
 
- require 'rubygems'; require 'morph'
+ require 'morph'
 
  csv = %Q[name,party\nTed Roe,red\nAli Davidson,blue\nSue Smith,green]
 
@@ -26,7 +26,7 @@ Here's example code showing Morph playing with CSV (comma-separated values):
 
 Here's example code showing Morph playing with TSV (tab-separated values):
 
- require 'rubygems'; require 'morph'
+ require 'morph'
 
  tsv = %Q[name\tparty\nTed Roe\tred\nAli Davidson\tblue\nSue Smith\tgreen]
 
@@ -42,7 +42,7 @@ Here's example code showing Morph playing with TSV (tab-separated values):
 
 Here's example code showing Morph playing with XML:
 
- require 'rubygems'; require 'morph'
+ require 'morph'
 
  xml = %Q[<?xml version="1.0" encoding="UTF-8"?>
  <councils type="array">
@@ -65,7 +65,7 @@ Here's example code showing Morph playing with XML:
 
 Here's example code showing Morph playing with Nokogiri in Ruby 1.9.2:
 
- require 'rubygems'; require 'nokogiri'; require 'open-uri'
+ require 'nokogiri'; require 'open-uri'
  require 'morph'
 
  class Hubbit
