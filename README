@@ -2,6 +2,9 @@ Morph mixin allows you to emerge Ruby class definitions from data via calling as
 
 
 
+== Installing Morph gem
+
+ gem install morph
 
 == Morph creating classes +from_csv+
 

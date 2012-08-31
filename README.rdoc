@@ -1,7 +1,10 @@
 Morph mixin allows you to emerge Ruby class definitions from data via calling assignment methods.
 
 { <img src="https://secure.travis-ci.org/robmckinnon/morph.png" alt="Travis CI build status"> }[http://travis-ci.org/robmckinnon/morph]
-{ <img src="http://api.coderwall.com/robmckinnon/endorsecount.png" alt="Coderwall Endorse"> }[http://coderwall.com/robmckinnon]
+
+== Installing Morph gem
+
+ gem install morph
 
 == Morph creating classes +from_csv+
 

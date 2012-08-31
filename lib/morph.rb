@@ -18,7 +18,7 @@ rescue Exception => e
 end
 
 module Morph
-  VERSION = "0.3.4" unless defined? Morph::VERSION
+  VERSION = "0.3.5" unless defined? Morph::VERSION
 
   class << self
     def generate_migrations object, options={}
