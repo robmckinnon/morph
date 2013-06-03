@@ -18,7 +18,7 @@ rescue Exception => e
 end
 
 module Morph
-  VERSION = "0.3.5" unless defined? Morph::VERSION
+  VERSION = "0.3.6" unless defined? Morph::VERSION
 
   class << self
     def generate_migrations object, options={}
@@ -161,6 +161,9 @@ module Morph
         attributes.each do |name, value|
           name = name.to_s if name.is_a?(Symbol)
           attribute = name.gsub(':',' ').underscore
+
+          value = value.to_time if defined?(XMLRPC::DateTime) && value.is_a?(XMLRPC::DateTime)
+
           case value
             when String, Date, Time, TrueClass, FalseClass, Fixnum, Float
               object.morph(attribute, value)

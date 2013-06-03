@@ -1,3 +1,5 @@
+v0.3.6. call to_time() on XMLRPC::DateTime when setting it as an attribute value
+
 v0.3.5. retain morph_methods when inheriting class and parent both include Morph
 
 v0.3.4. return instance morph_attributes ordered by original addition of attribute
