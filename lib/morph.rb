@@ -18,7 +18,7 @@ rescue Exception => e
 end
 
 module Morph
-  VERSION = "0.3.6" unless defined? Morph::VERSION
+  VERSION = "0.3.7" unless defined? Morph::VERSION
 
   class << self
     def generate_migrations object, options={}
@@ -249,9 +249,17 @@ module Morph
   end
 
   module MethodMissing
-    def method_missing symbol, *args
+    def method_missing symbol, *args, &block
       is_writer = symbol.to_s =~ /=$/
-      is_writer ? morph_method_missing(symbol, *args) : super
+      if is_writer
+        if block_given?
+          Morph::InstanceMethods::Helper.morph_method_missing(self, symbol, *args, &block)
+        else
+          Morph::InstanceMethods::Helper.morph_method_missing(self, symbol, *args)
+        end
+      else
+        super
+      end
     end
   end
 
@@ -280,7 +288,7 @@ module Morph
       if attributes_or_label.is_a? Hash
         attributes_or_label.each { |a, v| morph(a, v) }
       else
-        attribute = convert_to_morph_method_name(attributes_or_label)
+        attribute = Helper.convert_to_morph_method_name(attributes_or_label)
         send("#{attribute}=".to_sym, value)
       end
     end
@@ -305,39 +313,40 @@ module Morph
       end
     end
 
-    def morph_method_missing symbol, *args
-      attribute = symbol.to_s.chomp '='
-      if RUBY_VERSION >= "1.9"
-        attribute = attribute.to_sym
-      end
+    module Helper
 
-      if Object.instance_methods.include?(attribute)
-        raise "'#{attribute}' is an instance_method on Object, cannot create accessor methods for '#{attribute}'"
-      elsif argument_provided? args
-        base = self.class
-        base.adding_morph_method = true
-
-        if block_given?
-          yield base, attribute
-        else
-          # base.class_eval "attr_accessor :#{attribute}"
-          base.class_eval "def #{attribute}; @#{attribute}; end; def #{attribute}=(value); @#{attribute} = value; end"
-          send(symbol, *args)
+      def self.morph_method_missing object, symbol, *args
+        attribute = symbol.to_s.chomp '='
+        if RUBY_VERSION >= "1.9"
+          attribute = attribute.to_sym
         end
-        base.adding_morph_method = false
+
+        if Object.instance_methods.include?(attribute)
+          raise "'#{attribute}' is an instance_method on Object, cannot create accessor methods for '#{attribute}'"
+        elsif Helper.argument_provided? args
+          base = object.class
+          base.adding_morph_method = true
+
+          if block_given?
+            yield base, attribute
+          else
+            # base.class_eval "attr_accessor :#{attribute}"
+            base.class_eval "def #{attribute}; @#{attribute}; end; def #{attribute}=(value); @#{attribute} = value; end"
+            object.send(symbol, *args)
+          end
+          base.adding_morph_method = false
+        end
       end
-    end
 
-    private
-
-      def argument_provided? args
+      def self.argument_provided? args
         args.size > 0 && !args[0].nil? && !(args[0].is_a?(String) && args[0].strip.size == 0)
       end
 
-      def convert_to_morph_method_name label
+      def self.convert_to_morph_method_name label
         name = label.to_s.downcase.tr('()\-*',' ').gsub("'",' ').gsub('/',' ').gsub('%','percentage').strip.chomp(':').strip.gsub(/\s/,'_').squeeze('_')
         name = '_'+name if name =~ /^\d/
         name
       end
+    end
   end
 end

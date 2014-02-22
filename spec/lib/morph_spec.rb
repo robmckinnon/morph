@@ -356,18 +356,8 @@ describe Morph do
     after(:all)  { unload_morph_class }
 
     it 'should class_eval the block' do
-      @morph.morph_method_missing(:chunky, 'bacon') do |base, attribute|
+      @morph.method_missing(:'chunky=', 'bacon') do |base, attribute|
         base.class_eval "def #{attribute}; 'spinach'; end"
-      end
-      @morph.respond_to?(:chunky).should == true
-      @morph.chunky.should == 'spinach'
-      morphed_class.class_eval "remove_method :chunky"
-      lambda { @morph.chunky }.should raise_error
-    end
-
-    it 'should class_eval the block' do
-      @morph.morph_method_missing :chunky, 'bacon' do |base, attribute|
-        base.class_def(attribute) { 'spinach' }
       end
       @morph.respond_to?(:chunky).should == true
       @morph.chunky.should == 'spinach'
@@ -680,6 +670,28 @@ Ali Davidson	labour		Basildon District Council
 Ted Roe,labour,Councillor for Stretford Ward,Trafford Council,
 Ali Davidson,labour,,Basildon District Council,
 ]
+      end
+    end
+  end
+
+  describe "don't mixin private methods" do
+    context 'when class defines argument_provided?()' do
+      it 'morph method still works' do
+        eval "class NoPrivate; def convert_to_morph_method_name(); 'x'; end; include Morph; end"
+        morph = NoPrivate.new
+        morph.convert_to_morph_method_name.should == 'x'
+        morph.morph 'x', 'y'
+        morph.x.should == 'y'
+      end
+    end
+
+    context 'when class defineds argument_provided?()' do
+      it 'method missing override still works' do
+        eval "class NoPrivate; def argument_provided?(); 'x'; end; include Morph; end"
+        morph = NoPrivate.new
+        morph.argument_provided?.should == 'x'
+        morph.x = 'y'
+        morph.x.should == 'y'
       end
     end
   end
