@@ -1,7 +1,6 @@
 source 'https://rubygems.org'
 
 group :test do
-  gem 'rspec'
   gem 'guard-rspec'
 end
 
@@ -10,6 +9,7 @@ group :development do
   # gem 'arrayfields'
   # gem 'map'
   # gem 'metrical'
+  gem 'rspec'
   gem 'echoe'
 end
 
