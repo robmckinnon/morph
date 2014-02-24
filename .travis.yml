@@ -4,7 +4,6 @@ rvm:
   - 2.0.0
   - 1.9.3
   - jruby-19mode
-  - jruby-head
   - ruby-head
   - rbx-2.2.5
 bundler_args: --without test
