@@ -45,15 +45,15 @@ describe Morph do
       end
 
       it 'should generate rails model generator script line, with given model name' do
-        morphed_class.script_generate {|model_name| 'SomethingDifferent'}.should == "rails destroy model SomethingDifferent; rails generate model SomethingDifferent noise:string"
+        Morph.script_generate(morphed_class) {|model_name| 'SomethingDifferent'}.should == "rails destroy model SomethingDifferent; rails generate model SomethingDifferent noise:string"
       end
 
       it 'should generate rails model generator script line' do
-        morphed_class.script_generate.should == "rails destroy model ExampleMorph; rails generate model ExampleMorph noise:string"
+        Morph.script_generate(morphed_class).should == "rails destroy model ExampleMorph; rails generate model ExampleMorph noise:string"
       end
 
       it 'should generate rails model generator script line' do
-        morphed_class.script_generate(:generator=>'model').should == "rails destroy model ExampleMorph; rails generate model ExampleMorph noise:string"
+        Morph.script_generate(morphed_class ,:generator=>'model').should == "rails destroy model ExampleMorph; rails generate model ExampleMorph noise:string"
       end
     end
 
@@ -216,11 +216,11 @@ describe Morph do
     end
 
     it 'should generate rails model generator script line' do
-      morphed_class.script_generate.should == "rails destroy model ExampleMorph; rails generate model ExampleMorph drink:string milk:string sugars:string"
+      Morph.script_generate(morphed_class).should == "rails destroy model ExampleMorph; rails generate model ExampleMorph drink:string milk:string sugars:string"
     end
 
     it 'should generate rails model generator script line' do
-      morphed_class.script_generate(:generator=>'model').should == "rails destroy model ExampleMorph; rails generate model ExampleMorph drink:string milk:string sugars:string"
+      Morph.script_generate(morphed_class, :generator=>'model').should == "rails destroy model ExampleMorph; rails generate model ExampleMorph drink:string milk:string sugars:string"
     end
   end
 
@@ -351,16 +351,14 @@ describe Morph do
     end
   end
 
-  describe 'when passing block to morph_method_missing' do
+  describe 'when calling method_missing' do
     before(:all) { initialize_morph }
     after(:all)  { unload_morph_class }
 
     it 'should class_eval the block' do
-      @morph.method_missing(:'chunky=', 'bacon') do |base, attribute|
-        base.class_eval "def #{attribute}; 'spinach'; end"
-      end
+      @morph.method_missing(:'chunky=', 'bacon')
       @morph.respond_to?(:chunky).should == true
-      @morph.chunky.should == 'spinach'
+      @morph.chunky.should == 'bacon'
       morphed_class.class_eval "remove_method :chunky"
       lambda { @morph.chunky }.should raise_error
     end

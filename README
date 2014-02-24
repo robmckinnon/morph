@@ -147,7 +147,7 @@ So, a new company method has appeared:
 
 Time to generate an Active Record model? Get a sample script line like this:
 
- Hubbit.script_generate
+ Morph.script_generate(Hubbit)
 
  #=> "rails destroy model Hubbit;
  #    rails generate model Hubbit company:string email:string location:string
@@ -155,7 +155,7 @@ Time to generate an Active Record model? Get a sample script line like this:
 
 or specify the generator:
 
- Hubbit.script_generate :generator => 'rspec_model'
+ Morph.script_generate(Hubbit, :generator => 'rspec_model')
 
  #=> "rails destroy rspec_model Hubbit;
  #    rails generate rspec_model Hubbit company:string email:string

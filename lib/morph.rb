@@ -93,6 +93,15 @@ module Morph
       end
     end
 
+    def script_generate morphed_class, options={}
+      name = morphed_class.name.to_s.split('::').last
+      name = yield name if block_given?
+      generator = options[:generator] || 'model'
+      line = ["rails destroy #{generator} #{name}; rails generate #{generator} #{name}"]
+      morphed_class.morph_methods.select{|m| not(m =~ /=$/) }.each {|attribute| line << " #{attribute}:string"}
+      line.join('')
+    end
+
     def included(base)
       base.extend ClassMethods
       base.send(:include, InstanceMethods)
@@ -211,21 +220,10 @@ module Morph
       methods
     end
 
-    def adding_morph_method= true_or_false
-      @@adding_morph_method[self] = true_or_false
-    end
-
-    def class_def name, &block
-      class_eval { define_method name, &block }
-    end
-
-    def script_generate options={}
-      name = self.name.to_s.split('::').last
-      name = yield name if block_given?
-      generator = options[:generator] || 'model'
-      line = ["rails destroy #{generator} #{name}; rails generate #{generator} #{name}"]
-      morph_methods.select{|m| not(m =~ /=$/) }.each {|attribute| line << " #{attribute}:string"}
-      line.join('')
+    def add_morph_attribute attribute, *args
+      @@adding_morph_method[self] = true
+      class_eval "attr_accessor :#{attribute}"
+      @@adding_morph_method[self] = false
     end
 
     protected
@@ -249,14 +247,10 @@ module Morph
   end
 
   module MethodMissing
-    def method_missing symbol, *args, &block
+    def method_missing symbol, *args
       is_writer = symbol.to_s =~ /=$/
       if is_writer
-        if block_given?
-          Morph::InstanceMethods::Helper.morph_method_missing(self, symbol, *args, &block)
-        else
-          Morph::InstanceMethods::Helper.morph_method_missing(self, symbol, *args)
-        end
+        Morph::InstanceMethods::Helper.morph_method_missing(self, symbol, *args)
       else
         super
       end
@@ -325,16 +319,8 @@ module Morph
           raise "'#{attribute}' is an instance_method on Object, cannot create accessor methods for '#{attribute}'"
         elsif Helper.argument_provided? args
           base = object.class
-          base.adding_morph_method = true
-
-          if block_given?
-            yield base, attribute
-          else
-            # base.class_eval "attr_accessor :#{attribute}"
-            base.class_eval "def #{attribute}; @#{attribute}; end; def #{attribute}=(value); @#{attribute} = value; end"
-            object.send(symbol, *args)
-          end
-          base.adding_morph_method = false
+          base.add_morph_attribute attribute
+          object.send(symbol, *args)
         end
       end
 
