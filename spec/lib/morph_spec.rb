@@ -9,7 +9,11 @@ describe Morph do
   let(:another_morph_class_code)  { 'class AnotherMorph; include Morph; end' }
   let(:extended_morph_class_code) { 'class ExtendedMorph < ExampleMorph; include Morph; end' }
 
-  let(:morphed_class) { eval(morph_class_code) ; ExampleMorph }
+  def morphed_class
+    eval(morph_class_code)
+    ExampleMorph
+  end
+
   let(:another_morphed_class) { eval(another_morph_class_code) ; AnotherMorph }
   let(:extended_morphed_class) { eval(extended_morph_class_code) ; ExtendedMorph }
 
