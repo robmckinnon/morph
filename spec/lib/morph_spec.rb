@@ -428,75 +428,81 @@ describe Morph do
     end
   end
 
+  let(:search_items_hash) do
+    {
+      "CompanyDetails"=> {
+        "SearchItems"=> [
+          { "CompanyDate"=> '',
+            "CompanyIndexStatus"=> '',
+            "DataSet"=>"LIVE",
+            "CompanyName"=>"CANONGROVE LIMITED",
+            "CompanyNumber"=>"SC244777" },
+          { "CompanyDate"=>"",
+            "CompanyIndexStatus"=>"",
+            "DataSet"=>"LIVE",
+            "CompanyName"=>"CANONHALL ACCOUNTANCY LTD",
+            "CompanyNumber"=>"05110715" }
+        ]
+      }
+    }
+  end
+
+  let(:company_details_hash) do
+    {
+      "CompanyDetails"=> {
+        :RegAddress=> {
+            "AddressLine"=>["ST DAVID'S HOUSE", "WEST WING", "WOOD STREET", "CARDIFF CF10 1ES"]},
+        "LastFullMemDate"=>"2002-03-25",
+        "xsi:schemaLocation"=>"xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.xsd",
+        "HasBranchInfo"=>"0",
+        "Mortgages"=> {
+            "NumMortSatisfied"=>"0",
+            "MortgageInd"=>"LT300",
+            "NumMortOutstanding"=>"7",
+            "NumMortPartSatisfied"=>"0",
+            "NumMortCharges"=>"7"},
+        "CompanyCategory"=>"Public Limited Company",
+        "HasAppointments"=>"1",
+        "SICCodes"=> {
+            "SicText"=>"stadiums"},
+        "Returns"=> {
+            "Overdue"=>"NO",
+            "DocumentAvailable"=>"1",
+            "NextDueDate"=>"2003-04-22",
+            "LastMadeUpDate"=>"2002-03-25"
+         },
+        "CountryOfOrigin"=>"United Kingdom",
+        "CompanyStatus"=>"Active",
+        "CompanyName"=>"MILLENNIUM STADIUM PLC",
+        "InLiquidation"=>"0",
+        "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance",
+        "Accounts"=>{
+            "Overdue"=>"NO",
+            "DocumentAvailable"=>"1",
+            "AccountCategory"=>"FULL",
+            "NextDueDate"=>"2002-11-30",
+            "LastMadeUpDate"=>"2001-04-30",
+            "AccountRefDate"=>"0000-30-04"},
+        "IncorporationDate"=>"1996-03-25",
+        "CompanyNumber"=>"03176906",
+        "xmlns"=>"http://xmlgw.companieshouse.gov.uk/v1-0"
+      }
+    }
+  end
+
   describe 'creating from hash' do
     it 'should create classes and object instances with array of hashes' do
-      h = {
-        "CompanyDetails"=> {
-          "SearchItems"=> [
-            { "CompanyDate"=> '',
-              "CompanyIndexStatus"=> '',
-              "DataSet"=>"LIVE",
-              "CompanyName"=>"CANONGROVE LIMITED",
-              "CompanyNumber"=>"SC244777" },
-            { "CompanyDate"=>"",
-              "CompanyIndexStatus"=>"",
-              "DataSet"=>"LIVE",
-              "CompanyName"=>"CANONHALL ACCOUNTANCY LTD",
-              "CompanyNumber"=>"05110715" }
-          ]
-        }
-      }
-      company_details = Morph.from_hash(h)
+      company_details = Morph.from_hash(search_items_hash)
       expect(company_details.search_items.first.class.name).to eq 'Morph::SearchItem'
       expect(company_details.search_items.first.data_set).to eq 'LIVE'
       expect(company_details.search_items.first.company_name).to eq 'CANONGROVE LIMITED'
     end
 
     it 'should create classes and object instances' do
-      h = {
-        "CompanyDetails"=> {
-          :RegAddress=> {
-              "AddressLine"=>["ST DAVID'S HOUSE", "WEST WING", "WOOD STREET", "CARDIFF CF10 1ES"]},
-          "LastFullMemDate"=>"2002-03-25",
-          "xsi:schemaLocation"=>"xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.xsd",
-          "HasBranchInfo"=>"0",
-          "Mortgages"=> {
-              "NumMortSatisfied"=>"0",
-              "MortgageInd"=>"LT300",
-              "NumMortOutstanding"=>"7",
-              "NumMortPartSatisfied"=>"0",
-              "NumMortCharges"=>"7"},
-          "CompanyCategory"=>"Public Limited Company",
-          "HasAppointments"=>"1",
-          "SICCodes"=> {
-              "SicText"=>"stadiums"},
-          "Returns"=> {
-              "Overdue"=>"NO",
-              "DocumentAvailable"=>"1",
-              "NextDueDate"=>"2003-04-22",
-              "LastMadeUpDate"=>"2002-03-25"
-           },
-          "CountryOfOrigin"=>"United Kingdom",
-          "CompanyStatus"=>"Active",
-          "CompanyName"=>"MILLENNIUM STADIUM PLC",
-          "InLiquidation"=>"0",
-          "xmlns:xsi"=>"http://www.w3.org/2001/XMLSchema-instance",
-          "Accounts"=>{
-              "Overdue"=>"NO",
-              "DocumentAvailable"=>"1",
-              "AccountCategory"=>"FULL",
-              "NextDueDate"=>"2002-11-30",
-              "LastMadeUpDate"=>"2001-04-30",
-              "AccountRefDate"=>"0000-30-04"},
-          "IncorporationDate"=>"1996-03-25",
-          "CompanyNumber"=>"03176906",
-          "xmlns"=>"http://xmlgw.companieshouse.gov.uk/v1-0"
-        }
-      }
       Object.const_set 'Company', Module.new
       Company.const_set 'House', Module.new
 
-      company_details = Morph.from_hash(h, Company::House)
+      company_details = Morph.from_hash(company_details_hash, Company::House)
       expect(company_details.class.name).to eq 'Company::House::CompanyDetails'
       morph_methods = company_details.class.morph_methods
       if RUBY_VERSION >= "1.9"
