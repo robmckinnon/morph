@@ -490,19 +490,14 @@ describe Morph do
     }
   end
 
-  describe 'creating from hash' do
+  shared_examples 'creates correctly' do
     it 'should create classes and object instances with array of hashes' do
-      company_details = Morph.from_hash(search_items_hash)
-      expect(company_details.search_items.first.class.name).to eq 'Morph::SearchItem'
-      expect(company_details.search_items.first.data_set).to eq 'LIVE'
-      expect(company_details.search_items.first.company_name).to eq 'CANONGROVE LIMITED'
+      expect(company_details_search.search_items.first.class.name).to eq 'Morph::SearchItem'
+      expect(company_details_search.search_items.first.data_set).to eq 'LIVE'
+      expect(company_details_search.search_items.first.company_name).to eq 'CANONGROVE LIMITED'
     end
 
     it 'should create classes and object instances' do
-      Object.const_set 'Company', Module.new
-      Company.const_set 'House', Module.new
-
-      company_details = Morph.from_hash(company_details_hash, Company::House)
       expect(company_details.class.name).to eq 'Company::House::CompanyDetails'
       morph_methods = company_details.class.morph_methods
       if RUBY_VERSION >= "1.9"
@@ -578,6 +573,32 @@ xmlns: http://xmlgw.companieshouse.gov.uk/v1-0
 xmlns_xsi: http://www.w3.org/2001/XMLSchema-instance
 xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.xsd|
     end
+  end
+
+  describe 'creating from hash' do
+    let(:company_details_search) { Morph.from_hash(search_items_hash) }
+
+    let(:company_details) do
+      Object.const_set 'Company', Module.new
+      Company.const_set 'House', Module.new
+      Morph.from_hash(company_details_hash, Company::House)
+    end
+
+    include_examples 'creates correctly'
+  end
+
+  describe 'creating from json' do
+    require 'json'
+
+    let(:company_details_search) { Morph.from_json(search_items_hash.to_json) }
+
+    let(:company_details) do
+      Object.const_set 'Company', Module.new unless defined? Company
+      Company.const_set 'House', Module.new unless defined? Company::House
+      Morph.from_json(company_details_hash.to_json, Company::House)
+    end
+
+    include_examples 'creates correctly'
   end
 
   describe 'creating from xml' do

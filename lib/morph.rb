@@ -72,6 +72,11 @@ module Morph
       from_hash hash, namespace
     end
 
+    def from_json json, namespace=Morph
+      hash = JSON.parse json
+      from_hash hash, namespace
+    end
+
     def from_hash hash, namespace=Morph
       if hash.keys.size == 1
         key = hash.keys.first
