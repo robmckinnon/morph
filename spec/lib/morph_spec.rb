@@ -45,23 +45,23 @@ describe Morph do
       it_should_behave_like "class with generated accessor methods added"
 
       it 'should return assigned value when reader method called' do
-        @morph.noise.should == quack
+        expect(@morph.noise).to eq quack
       end
 
       it 'should return hash of attributes when morph_attributes called' do
-        @morph.morph_attributes.should == {attribute.to_sym => quack}
+        expect(@morph.morph_attributes).to eq({attribute.to_sym => quack})
       end
 
       it 'should generate rails model generator script line, with given model name' do
-        Morph.script_generate(morphed_class) {|model_name| 'SomethingDifferent'}.should == "rails destroy model SomethingDifferent; rails generate model SomethingDifferent noise:string"
+        expect(Morph.script_generate(morphed_class) {|model_name| 'SomethingDifferent'}).to eq "rails destroy model SomethingDifferent; rails generate model SomethingDifferent noise:string"
       end
 
       it 'should generate rails model generator script line' do
-        Morph.script_generate(morphed_class).should == "rails destroy model ExampleMorph; rails generate model ExampleMorph noise:string"
+        expect(Morph.script_generate(morphed_class)).to eq "rails destroy model ExampleMorph; rails generate model ExampleMorph noise:string"
       end
 
       it 'should generate rails model generator script line' do
-        Morph.script_generate(morphed_class ,:generator=>'model').should == "rails destroy model ExampleMorph; rails generate model ExampleMorph noise:string"
+        expect(Morph.script_generate(morphed_class ,:generator=>'model')).to eq "rails destroy model ExampleMorph; rails generate model ExampleMorph noise:string"
       end
     end
 
@@ -102,15 +102,15 @@ describe Morph do
       @morph.every = 'where'
       @another_morph.no = 'where'
 
-      morphed_class.morph_methods.size.should == 2
-      another_morphed_class.morph_methods.size.should == 2
+      expect(morphed_class.morph_methods.size).to eq 2
+      expect(another_morphed_class.morph_methods.size).to eq 2
 
       if RUBY_VERSION >= "1.9"
-        morphed_class.morph_methods.should == [:every,:every=]
-        another_morphed_class.morph_methods.should == [:no,:no=]
+        expect(morphed_class.morph_methods).to eq [:every,:every=]
+        expect(another_morphed_class.morph_methods).to eq [:no,:no=]
       else
-        morphed_class.morph_methods.should == ['every','every=']
-        another_morphed_class.morph_methods.should == ['no','no=']
+        expect(morphed_class.morph_methods).to eq ['every','every=']
+        expect(another_morphed_class.morph_methods).to eq ['no','no=']
       end
     end
 
@@ -120,8 +120,8 @@ describe Morph do
       @morph.loose = @another_morph
 
       attributes = @morph.morph_attributes
-      attributes[:every].should == 'which'
-      attributes[:loose].should == {:way => 'but'}
+      expect(attributes[:every]).to eq 'which'
+      expect(attributes[:loose]).to eq :way => 'but'
     end
 
     it 'should call morph_attributes on both objects, when one object has a reference to array of others' do
@@ -130,8 +130,8 @@ describe Morph do
       @morph.loose = [@another_morph]
 
       attributes = @morph.morph_attributes
-      attributes[:every].should == 'which'
-      attributes[:loose].should == [{:way => 'but'}]
+      expect(attributes[:every]).to eq 'which'
+      expect(attributes[:loose]).to eq [{:way => 'but'}]
     end
 
     it 'should call morph_attributes on both objects, when one object has a reference to hash of others' do
@@ -140,17 +140,17 @@ describe Morph do
       @morph.loose = { :honky_tonk => @another_morph}
 
       attributes = @morph.morph_attributes
-      attributes[:every].should == 'which'
-      attributes[:loose].should == { :honky_tonk => {:way => 'but'} }
+      expect(attributes[:every]).to eq 'which'
+      expect(attributes[:loose]).to eq({ :honky_tonk => {:way => 'but'} })
       attributes.delete(:every)
       attributes = @morph.morph_attributes
-      attributes[:every].should == 'which'
+      expect(attributes[:every]).to eq 'which'
 
       attributes = @morph.class.morph_attributes
-      attributes.should == [:every, :loose]
+      expect(attributes).to eq [:every, :loose]
       attributes.delete(:every)
       attributes = @morph.class.morph_attributes
-      attributes.should == [:every, :loose]
+      expect(attributes).to eq [:every, :loose]
     end
 
     after do
@@ -166,7 +166,7 @@ describe Morph do
     let(:morph_class_code) { "class ExampleMorph\n include Morph\n def happy\n 'happy, joy, joy'\n end\n end" }
 
     it 'should not return methods defined in class in morph_methods list' do
-      morph_methods.should be_empty
+      expect(morph_methods).to be_empty
     end
   end
 
@@ -199,7 +199,7 @@ describe Morph do
     it_should_behave_like "class with generated accessor methods added"
 
     it 'should return assigned value when reader method called' do
-      @morph.reading.should == value
+      expect(@morph.reading).to eq value
     end
   end
 
@@ -218,17 +218,17 @@ describe Morph do
     it_should_behave_like "class with generated accessor methods added"
 
     it 'should return assigned value when reader method called' do
-      @morph.drink.should == 'tea'
-      @morph.sugars.should == 2
-      @morph.milk.should == 'yes please'
+      expect(@morph.drink).to eq 'tea'
+      expect(@morph.sugars).to eq 2
+      expect(@morph.milk).to eq 'yes please'
     end
 
     it 'should generate rails model generator script line' do
-      Morph.script_generate(morphed_class).should == "rails destroy model ExampleMorph; rails generate model ExampleMorph drink:string milk:string sugars:string"
+      expect(Morph.script_generate(morphed_class)).to eq "rails destroy model ExampleMorph; rails generate model ExampleMorph drink:string milk:string sugars:string"
     end
 
     it 'should generate rails model generator script line' do
-      Morph.script_generate(morphed_class, :generator=>'model').should == "rails destroy model ExampleMorph; rails generate model ExampleMorph drink:string milk:string sugars:string"
+      expect(Morph.script_generate(morphed_class, :generator=>'model')).to eq "rails destroy model ExampleMorph; rails generate model ExampleMorph drink:string milk:string sugars:string"
     end
   end
 
@@ -312,7 +312,7 @@ describe Morph do
 
     it 'should raise NoMethodError' do
       initialize_morph
-      lambda { @morph.noise }.should raise_error(NoMethodError, /undefined method `noise'/)
+      expect { @morph.noise }.to raise_error(NoMethodError, /undefined method `noise'/)
     end
   end
 
@@ -320,7 +320,7 @@ describe Morph do
 
     it 'should raise NoMethodError' do
       initialize_morph
-      lambda { @morph.name }.should raise_error(NoMethodError, /undefined method `name'/)
+      expect { @morph.name }.to raise_error(NoMethodError, /undefined method `name'/)
     end
   end
 
@@ -341,7 +341,7 @@ describe Morph do
     it_should_behave_like "class with generated accessor methods added"
 
     it 'should return assigned value when reader method called' do
-      @morph.name.should == value
+      expect(@morph.name).to eq value
     end
   end
 
@@ -351,11 +351,11 @@ describe Morph do
     after(:all)  { unload_morph_class }
 
     it 'should throw exception if non nil object is passed' do
-      lambda { @morph.class = 'Red' }.should raise_error(/cannot create accessor methods/)
+      expect { @morph.class = 'Red' }.to raise_error(/cannot create accessor methods/)
     end
 
     it 'should throw exception if nil object is passed' do
-      lambda { @morph.class = nil }.should raise_error(/cannot create accessor methods/)
+      expect { @morph.class = nil }.to raise_error(/cannot create accessor methods/)
     end
   end
 
@@ -365,10 +365,10 @@ describe Morph do
 
     it 'should class_eval the block' do
       @morph.method_missing(:'chunky=', 'bacon')
-      @morph.respond_to?(:chunky).should == true
-      @morph.chunky.should == 'bacon'
+      expect(@morph.respond_to?(:chunky)).to eq true
+      expect(@morph.chunky).to eq 'bacon'
       morphed_class.class_eval "remove_method :chunky"
-      lambda { @morph.chunky }.should raise_error(NoMethodError)
+      expect { @morph.chunky }.to raise_error(NoMethodError)
     end
 
   end
@@ -447,9 +447,9 @@ describe Morph do
         }
       }
       company_details = Morph.from_hash(h)
-      company_details.search_items.first.class.name.should == 'Morph::SearchItem'
-      company_details.search_items.first.data_set.should == 'LIVE'
-      company_details.search_items.first.company_name.should == 'CANONGROVE LIMITED'
+      expect(company_details.search_items.first.class.name).to eq 'Morph::SearchItem'
+      expect(company_details.search_items.first.data_set).to eq 'LIVE'
+      expect(company_details.search_items.first.company_name).to eq 'CANONGROVE LIMITED'
     end
 
     it 'should create classes and object instances' do
@@ -497,39 +497,39 @@ describe Morph do
       Company.const_set 'House', Module.new
 
       company_details = Morph.from_hash(h, Company::House)
-      company_details.class.name.should == 'Company::House::CompanyDetails'
+      expect(company_details.class.name).to eq 'Company::House::CompanyDetails'
       morph_methods = company_details.class.morph_methods
       if RUBY_VERSION >= "1.9"
-        morph_methods.include?(:last_full_mem_date).should be true
-        morph_methods.include?(:accounts).should be true
+        expect(morph_methods.include?(:last_full_mem_date)).to be true
+        expect(morph_methods.include?(:accounts)).to be true
         morph_methods.delete(:accounts)
-        morph_methods.include?(:accounts).should be false
+        expect(morph_methods.include?(:accounts)).to be false
         morph_methods = company_details.class.morph_methods
-        morph_methods.include?(:accounts).should be true
+        expect(morph_methods.include?(:accounts)).to be true
       else
-        morph_methods.include?('last_full_mem_date').should be true
-        morph_methods.include?('accounts').should be true
+        expect(morph_methods.include?('last_full_mem_date')).to be true
+        expect(morph_methods.include?('accounts')).to be true
         morph_methods.delete('accounts')
-        morph_methods.include?('accounts').should be false
+        expect(morph_methods.include?('accounts')).to be false
         morph_methods = company_details.class.morph_methods
-        morph_methods.include?('accounts').should be true
+        expect(morph_methods.include?('accounts')).to be true
       end
 
-      company_details.accounts.class.name.should == 'Company::House::Accounts'
-      company_details.accounts.overdue.should == 'NO'
-      company_details.last_full_mem_date.should == "2002-03-25"
-      company_details.sic_codes.sic_text.should == 'stadiums'
-      company_details.reg_address.address_lines.should == ["ST DAVID'S HOUSE", "WEST WING", "WOOD STREET", "CARDIFF CF10 1ES"]
+      expect(company_details.accounts.class.name).to eq 'Company::House::Accounts'
+      expect(company_details.accounts.overdue).to eq 'NO'
+      expect(company_details.last_full_mem_date).to eq "2002-03-25"
+      expect(company_details.sic_codes.sic_text).to eq 'stadiums'
+      expect(company_details.reg_address.address_lines).to eq ["ST DAVID'S HOUSE", "WEST WING", "WOOD STREET", "CARDIFF CF10 1ES"]
 
       list = Morph.generate_migrations company_details, :ignore=>['xmlns','xmlns_xsi','xsi_schema_location']
-      list.size.should == 7
-      list[0].should == "./script/generate model company_details company_category:string company_name:string company_number:string company_status:string country_of_origin:string has_appointments:string has_branch_info:string in_liquidation:string incorporation_date:date last_full_mem_date:date"
-      list[1].should == './script/generate model accounts company_details_id:integer account_category:string account_ref_date:date document_available:string last_made_up_date:date next_due_date:date overdue:string'
-      list[2].should == './script/generate model mortgages company_details_id:integer mortgage_ind:string num_mort_charges:string num_mort_outstanding:string num_mort_part_satisfied:string num_mort_satisfied:string'
-      list[3].should == './script/generate model reg_address company_details_id:integer'
-      list[4].should == './script/generate model address_lines reg_address_id:integer'
-      list[5].should == './script/generate model returns company_details_id:integer document_available:string last_made_up_date:date next_due_date:date overdue:string'
-      list[6].should == './script/generate model sic_codes company_details_id:integer sic_text:string'
+      expect(list.size).to eq 7
+      expect(list[0]).to eq "./script/generate model company_details company_category:string company_name:string company_number:string company_status:string country_of_origin:string has_appointments:string has_branch_info:string in_liquidation:string incorporation_date:date last_full_mem_date:date"
+      expect(list[1]).to eq './script/generate model accounts company_details_id:integer account_category:string account_ref_date:date document_available:string last_made_up_date:date next_due_date:date overdue:string'
+      expect(list[2]).to eq './script/generate model mortgages company_details_id:integer mortgage_ind:string num_mort_charges:string num_mort_outstanding:string num_mort_part_satisfied:string num_mort_satisfied:string'
+      expect(list[3]).to eq './script/generate model reg_address company_details_id:integer'
+      expect(list[4]).to eq './script/generate model address_lines reg_address_id:integer'
+      expect(list[5]).to eq './script/generate model returns company_details_id:integer document_available:string last_made_up_date:date next_due_date:date overdue:string'
+      expect(list[6]).to eq './script/generate model sic_codes company_details_id:integer sic_text:string'
 
       yaml = %Q|--- !ruby/object:Company::House::CompanyDetails
 accounts: !ruby/object:Company::House::Accounts
@@ -577,11 +577,11 @@ xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.x
   describe 'creating from xml' do
 
     def check_councils councils, class_name
-      councils.class.should == Array
-      councils.size.should == 2
-      councils.first.class.name.should == class_name
-      councils.first.name.should == 'Aberdeen City Council'
-      councils.last.name.should == 'Allerdale Borough Council'
+      expect(councils.class).to eq Array
+      expect(councils.size).to eq 2
+      expect(councils.first.class.name).to eq class_name
+      expect(councils.first.name).to eq 'Aberdeen City Council'
+      expect(councils.last.name).to eq 'Allerdale Borough Council'
     end
 
     it 'should create classes and object instances' do
@@ -613,22 +613,22 @@ xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.x
   describe 'creating from' do
 
     def check_councillors councillors, class_name, nil_value=''
-      councillors.class.should == Array
-      councillors.size.should == 2
+      expect(councillors.class).to eq Array
+      expect(councillors.size).to eq 2
       councillor = councillors.first
-      councillor.class.name.should == class_name
-      councillor.name.should == 'Ted Roe'
-      councillor.party.should == 'labour'
-      councillor.councillors.should == 'Councillor for Stretford Ward'
-      councillor.councils.should == 'Trafford Council'
-      councillor.respond_to?(:council_experience).should be false
+      expect(councillor.class.name).to eq class_name
+      expect(councillor.name).to eq 'Ted Roe'
+      expect(councillor.party).to eq 'labour'
+      expect(councillor.councillors).to eq 'Councillor for Stretford Ward'
+      expect(councillor.councils).to eq 'Trafford Council'
+      expect(councillor.respond_to?(:council_experience)).to be false
 
       councillor = councillors.last
-      councillor.name.should == 'Ali Davidson'
-      councillor.party.should == 'labour'
-      councillor.councillors.should == nil_value
-      councillor.councils.should == 'Basildon District Council'
-      councillor.respond_to?(:council_experience).should be false
+      expect(councillor.name).to eq 'Ali Davidson'
+      expect(councillor.party).to eq 'labour'
+      expect(councillor.councillors).to eq nil_value
+      expect(councillor.councils).to eq 'Basildon District Council'
+      expect(councillor.respond_to?(:council_experience)).to be false
     end
 
     describe 'tsv (tab separated value)' do
@@ -685,9 +685,9 @@ Ali Davidson,labour,,Basildon District Council,
       it 'morph method still works' do
         eval "class NoPrivate; def convert_to_morph_method_name(); 'x'; end; include Morph; end"
         morph = NoPrivate.new
-        morph.convert_to_morph_method_name.should == 'x'
+        expect(morph.convert_to_morph_method_name).to eq 'x'
         morph.morph 'x', 'y'
-        morph.x.should == 'y'
+        expect(morph.x).to eq 'y'
       end
     end
 
@@ -695,9 +695,9 @@ Ali Davidson,labour,,Basildon District Council,
       it 'method missing override still works' do
         eval "class NoPrivate; def argument_provided?(); 'x'; end; include Morph; end"
         morph = NoPrivate.new
-        morph.argument_provided?.should == 'x'
+        expect(morph.argument_provided?).to eq 'x'
         morph.x = 'y'
-        morph.x.should == 'y'
+        expect(morph.x).to eq 'y'
       end
     end
   end
