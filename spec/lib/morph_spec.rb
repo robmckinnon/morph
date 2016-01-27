@@ -5,7 +5,11 @@ describe Morph do
   include MorphSpecHelperMethods
 
   let(:attribute) { nil }
-  let(:morph_class_code)          { 'class ExampleMorph; include Morph; end' }
+
+  def morph_class_code
+    'class ExampleMorph; include Morph; end'
+  end
+
   let(:another_morph_class_code)  { 'class AnotherMorph; include Morph; end' }
   let(:extended_morph_class_code) { 'class ExtendedMorph < ExampleMorph; include Morph; end' }
 
@@ -308,7 +312,7 @@ describe Morph do
 
     it 'should raise NoMethodError' do
       initialize_morph
-      lambda { @morph.noise }.should raise_error(/undefined method `noise'/)
+      lambda { @morph.noise }.should raise_error(NoMethodError, /undefined method `noise'/)
     end
   end
 
@@ -316,7 +320,7 @@ describe Morph do
 
     it 'should raise NoMethodError' do
       initialize_morph
-      lambda { @morph.name }.should raise_error(/undefined method `name'/)
+      lambda { @morph.name }.should raise_error(NoMethodError, /undefined method `name'/)
     end
   end
 
@@ -364,7 +368,7 @@ describe Morph do
       @morph.respond_to?(:chunky).should == true
       @morph.chunky.should == 'bacon'
       morphed_class.class_eval "remove_method :chunky"
-      lambda { @morph.chunky }.should raise_error
+      lambda { @morph.chunky }.should raise_error(NoMethodError)
     end
 
   end
@@ -496,19 +500,19 @@ describe Morph do
       company_details.class.name.should == 'Company::House::CompanyDetails'
       morph_methods = company_details.class.morph_methods
       if RUBY_VERSION >= "1.9"
-        morph_methods.include?(:last_full_mem_date).should be_true
-        morph_methods.include?(:accounts).should be_true
+        morph_methods.include?(:last_full_mem_date).should be true
+        morph_methods.include?(:accounts).should be true
         morph_methods.delete(:accounts)
-        morph_methods.include?(:accounts).should be_false
+        morph_methods.include?(:accounts).should be false
         morph_methods = company_details.class.morph_methods
-        morph_methods.include?(:accounts).should be_true
+        morph_methods.include?(:accounts).should be true
       else
-        morph_methods.include?('last_full_mem_date').should be_true
-        morph_methods.include?('accounts').should be_true
+        morph_methods.include?('last_full_mem_date').should be true
+        morph_methods.include?('accounts').should be true
         morph_methods.delete('accounts')
-        morph_methods.include?('accounts').should be_false
+        morph_methods.include?('accounts').should be false
         morph_methods = company_details.class.morph_methods
-        morph_methods.include?('accounts').should be_true
+        morph_methods.include?('accounts').should be true
       end
 
       company_details.accounts.class.name.should == 'Company::House::Accounts'
@@ -617,14 +621,14 @@ xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.x
       councillor.party.should == 'labour'
       councillor.councillors.should == 'Councillor for Stretford Ward'
       councillor.councils.should == 'Trafford Council'
-      councillor.respond_to?(:council_experience).should be_false
+      councillor.respond_to?(:council_experience).should be false
 
       councillor = councillors.last
       councillor.name.should == 'Ali Davidson'
       councillor.party.should == 'labour'
       councillor.councillors.should == nil_value
       councillor.councils.should == 'Basildon District Council'
-      councillor.respond_to?(:council_experience).should be_false
+      councillor.respond_to?(:council_experience).should be false
     end
 
     describe 'tsv (tab separated value)' do
