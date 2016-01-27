@@ -46,7 +46,7 @@ module MorphSpecHelperMethods
   end
 
   def check_convert_to_morph_method_name label, method_name
-    Morph::InstanceMethods::Helper.convert_to_morph_method_name(label).should == method_name
+    expect(Morph::InstanceMethods::Helper.convert_to_morph_method_name(label)).to eq method_name
   end
 
   def each_attribute
@@ -66,38 +66,38 @@ shared_examples_for "class with generated accessor methods added" do |klass|
 
   it 'should add reader method to class instance_methods list' do
     if RUBY_VERSION >= "1.9"
-      each_attribute { |a| instance_methods(klass).should include(a.to_s.to_sym) }
+      each_attribute { |a| expect(instance_methods(klass)).to include(a.to_s.to_sym) }
     else
-      each_attribute { |a| instance_methods(klass).should include(a.to_s) }
+      each_attribute { |a| expect(instance_methods(klass)).to include(a.to_s) }
     end
   end
 
   it 'should add writer method to class instance_methods list' do
     if RUBY_VERSION >= "1.9"
-      each_attribute { |a| instance_methods(klass).should include("#{a}=".to_sym) }
+      each_attribute { |a| expect(instance_methods(klass)).to include("#{a}=".to_sym) }
     else
-      each_attribute { |a| instance_methods(klass).should include("#{a}=") }
+      each_attribute { |a| expect(instance_methods(klass)).to include("#{a}=") }
     end
   end
 
   it 'should add reader method to class morph_methods list' do
     if RUBY_VERSION >= "1.9"
-      each_attribute { |a| morph_methods(klass).should include(a.to_s.to_sym) }
+      each_attribute { |a| expect(morph_methods(klass)).to include(a.to_s.to_sym) }
     else
-      each_attribute { |a| morph_methods(klass).should include(a.to_s) }
+      each_attribute { |a| expect(morph_methods(klass)).to include(a.to_s) }
     end
   end
 
   it 'should add writer method to class morph_methods list' do
     if RUBY_VERSION >= "1.9"
-      each_attribute { |a| morph_methods(klass).should include("#{a}=".to_sym) }
+      each_attribute { |a| expect(morph_methods(klass)).to include("#{a}=".to_sym) }
     else
-      each_attribute { |a| morph_methods(klass).should include("#{a}=") }
+      each_attribute { |a| expect(morph_methods(klass)).to include("#{a}=") }
     end
   end
 
   it 'should only have generated accessor methods in morph_methods list' do
-    morph_methods(klass).size.should == expected_morph_methods_count
+    expect(morph_methods(klass).size).to eq expected_morph_methods_count
   end
 
 end
@@ -105,22 +105,22 @@ end
 shared_examples_for "class without generated accessor methods added" do
 
   it 'should not add reader method to class instance_methods list' do
-    instance_methods.should_not include(attribute)
+    expect(instance_methods).to_not include(attribute)
   end
 
   it 'should not add writer method to class instance_methods list' do
-    instance_methods.should_not include("#{attribute}=")
+    expect(instance_methods).to_not include("#{attribute}=")
   end
 
   it 'should not add reader method to class morph_methods list' do
-    morph_methods.should_not include(attribute)
+    expect(morph_methods).to_not include(attribute)
   end
 
   it 'should not add writer method to class morph_methods list' do
-    morph_methods.should_not include("#{attribute}=")
+    expect(morph_methods).to_not include("#{attribute}=")
   end
 
   it 'should have empty morph_methods list' do
-    morph_methods.size.should == 0
+    expect(morph_methods.size).to eq 0
   end
 end

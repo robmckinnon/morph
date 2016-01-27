@@ -1,10 +1,12 @@
 language: ruby
 rvm:
-  - 2.1.0
-  - 2.0.0
+  - 2.3.0
+  - 2.2.4
+  - 2.1.8
+  - 2.0.0-p598
   - 1.9.3
-  - jruby-19mode
+  - jruby-head
   - ruby-head
-  - rbx-2.2.5
+  - rbx-3.13
 bundler_args: --without test
 script: bundle exec rspec spec

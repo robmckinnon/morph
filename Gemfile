@@ -18,7 +18,7 @@ if RUBY_VERSION < '1.9'
   gem 'activesupport'
   gem 'fastercsv'
 else
-  gem 'active_support'
+  gem 'activesupport'
 end
 
 gem 'rake' # required for travis builds
