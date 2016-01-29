@@ -492,9 +492,11 @@ describe Morph do
 
   shared_examples 'creates correctly' do
     it 'should create classes and object instances with array of hashes' do
-      expect(company_details_search.search_items.first.class.name).to eq 'Morph::SearchItem'
-      expect(company_details_search.search_items.first.data_set).to eq 'LIVE'
-      expect(company_details_search.search_items.first.company_name).to eq 'CANONGROVE LIMITED'
+      items = company_details_search.is_a?(Array) ? company_details_search : company_details_search.search_items
+
+      expect(items.first.class.name).to eq 'Morph::SearchItem'
+      expect(items.first.data_set).to eq 'LIVE'
+      expect(items.first.company_name).to eq 'CANONGROVE LIMITED'
     end
 
     it 'should create classes and object instances' do
@@ -595,7 +597,25 @@ xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.x
     let(:company_details) do
       Object.const_set 'Company', Module.new unless defined? Company
       Company.const_set 'House', Module.new unless defined? Company::House
-      Morph.from_json(company_details_hash.to_json, Company::House)
+      Morph.from_json(company_details_hash.to_json, nil, Company::House)
+    end
+
+    include_examples 'creates correctly'
+  end
+
+  describe 'creating from json that is not single key hash' do
+    require 'json'
+
+    let(:company_details_search) do
+      array = search_items_hash['CompanyDetails']['SearchItems']
+      Morph.from_json(array.to_json, 'SearchItems')
+    end
+
+    let(:company_details) do
+      Object.const_set 'Company', Module.new unless defined? Company
+      Company.const_set 'House', Module.new unless defined? Company::House
+      multi_key_hash = company_details_hash['CompanyDetails']
+      Morph.from_json(multi_key_hash.to_json, 'CompanyDetails', Company::House)
     end
 
     include_examples 'creates correctly'

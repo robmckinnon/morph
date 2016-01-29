@@ -72,9 +72,11 @@ module Morph
       from_hash hash, namespace
     end
 
-    def from_json json, namespace=Morph
+    def from_json json, root_key=nil, namespace=Morph, &block
+      require 'json' unless defined? JSON
       hash = JSON.parse json
-      from_hash hash, namespace
+      hash = { root_key => hash } if root_key
+      from_hash hash, namespace, &block
     end
 
     def from_hash hash, namespace=Morph
