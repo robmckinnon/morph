@@ -79,17 +79,13 @@ module Morph
 
     def from_hash hash, namespace=Morph
       if hash.keys.size == 1
-        key = hash.keys.first
+        name = hash.keys.first
 
-        if hash[key].is_a? Hash
-          attributes = hash[key]
-          object = object_from_name(key, namespace)
-          add_to_object object, attributes, namespace
-          object
-        elsif hash[key].is_a? Array
-          array = hash[key]
-          name = key.to_s.singularize
-          objects_from_array(array, name, namespace)
+        case hash[name]
+        when Hash
+          object_from_hash hash[name], name, namespace
+        when Array
+          objects_from_array hash[name], name, namespace
         else
           raise 'hash root value must be a Hash or an Array'
         end
