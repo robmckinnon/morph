@@ -212,9 +212,9 @@ module Morph
 
     def morph_methods
       methods = if RUBY_VERSION >= "1.9"
-        @@morph_methods[self].keys.sort.map(&:to_sym)
-      else
         @@morph_methods[self].keys.sort
+      else
+        @@morph_methods[self].keys.sort.map(&:to_s)
       end
 
       if superclass.respond_to?(:morph_attributes)
@@ -233,15 +233,15 @@ module Morph
 
       def method_added symbol
         if @@adding_morph_method[self]
-          @@morph_methods[self][symbol.to_s] = true
+          @@morph_methods[self][symbol] = true
           is_writer = symbol.to_s =~ /=$/
           @@morph_attributes[self] << symbol unless is_writer
         end
       end
 
       def method_removed symbol
-        if @@morph_methods[self].has_key? symbol.to_s
-          @@morph_methods[self].delete symbol.to_s
+        if @@morph_methods[self].has_key? symbol
+          @@morph_methods[self].delete symbol
           is_writer = symbol.to_s =~ /=$/
           @@morph_attributes[self].delete(symbol) unless is_writer
         end
@@ -302,7 +302,6 @@ module Morph
 
           value = value.collect {|v| v.respond_to?(:morph_attributes) ? v.morph_attributes : v } if value.is_a? Array
           value = value.morph_attributes if value.respond_to? :morph_attributes
-
 
           hash[symbol] = value
         end
