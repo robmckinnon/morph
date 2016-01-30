@@ -46,7 +46,7 @@ module MorphSpecHelperMethods
   end
 
   def check_convert_to_morph_method_name label, method_name
-    expect(Morph::InstanceMethods::Helper.convert_to_morph_method_name(label)).to eq method_name
+    expect(Chas.convert_to_morph_method_name(label)).to eq method_name
   end
 
   def each_attribute

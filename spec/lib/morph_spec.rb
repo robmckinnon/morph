@@ -757,4 +757,12 @@ Ali Davidson,labour,,Basildon District Council,
     end
   end
 
+  describe 'mixin ClassMethods' do
+    it 'hides @@adding_morph_method @@morph_methods @@morph_attributes' do
+      eval 'class Tree; include Morph; end; t = Tree.new; t.this = "that"'
+      expect(Tree.const_get(:ClassMethods).class_variables).to eq []
+      expect(Tree.class_variables).to eq []
+    end
+  end
+
 end
