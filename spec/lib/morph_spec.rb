@@ -98,6 +98,11 @@ describe Morph do
       initialize_another_morph
     end
 
+    it 'returns morph classes' do
+      @another_morph.ex = 'machina'
+      expect(Morph.classes.map(&:name)).to eq([ExampleMorph, AnotherMorph].map(&:name))
+    end
+
     it 'should have morph_method return appropriate methods for each class' do
       @morph.every = 'where'
       @another_morph.no = 'where'

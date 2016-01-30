@@ -22,6 +22,10 @@ module Chas
   @morph_methods = Hash.new {|hash,klass| hash[klass] = {} } unless defined?(@morph_methods)
   @morph_attributes = Hash.new {|hash,klass| hash[klass] = [] } unless defined?(@morph_attributes)
 
+  def self.morph_classes
+    @morph_attributes.keys
+  end
+
   def self.add_method klass, symbol
     if adding_morph_method?(klass)
       @morph_methods[klass][symbol] = true
@@ -106,9 +110,13 @@ module Chas
 end
 
 module Morph
-  VERSION = "0.3.7" unless defined? Morph::VERSION
+  VERSION = "0.4.0" unless defined? Morph::VERSION
 
   class << self
+    def classes
+      Chas.morph_classes
+    end
+
     def generate_migrations object, options={}
       options[:ignore] ||= []
       options[:belongs_to_id] ||= ''
