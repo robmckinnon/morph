@@ -98,7 +98,7 @@ module Chas
 
   def self.convert_to_morph_method_name label
     name = label.to_s.downcase
-    name.tr!(':"\'/()\-*\\',' ')
+    name.tr!(',.:"\'/()\-*\\',' ')
     name.gsub!('%','percentage')
     name.strip!
     name.gsub!(/^(\d)/, '_\1')
@@ -258,7 +258,7 @@ module Morph
 
       def objects_from_array array, name, namespace
         if array.size > 0 && array.collect(&:class).uniq == [Hash]
-          array.map! { |hash| object_from_hash(hash, name.singularize, namespace) }
+          array.map! { |hash| object_from_hash(hash, name.to_s.singularize, namespace) }
         else
           array
         end

@@ -439,6 +439,10 @@ describe Morph do
     it 'removes single and double quotes' do
       check_convert_to_morph_method_name 'ready"steady\'go', 'ready_steady_go'
     end
+
+    it 'removes dots and commas' do
+      check_convert_to_morph_method_name 'config_for.rb,', 'config_for_rb'
+    end
   end
 
   let(:search_items_hash) do
