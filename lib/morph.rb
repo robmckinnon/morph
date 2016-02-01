@@ -77,6 +77,12 @@ module Chas
     @adding_morph_method[klass] = false
   end
 
+  def self.add_morph_attribute klass, attribute
+    start_adding_morph_method(klass)
+    klass.class_eval "attr_accessor :#{attribute}"
+    finish_adding_morph_method(klass)
+  end
+
   def self.morph_method_missing object, symbol, *args
     attribute = symbol.to_s.chomp '='
     if RUBY_VERSION >= "1.9"
@@ -87,7 +93,7 @@ module Chas
       raise "'#{attribute}' is an instance_method on Object, cannot create accessor methods for '#{attribute}'"
     elsif argument_provided? args
       base = object.class
-      base.add_morph_attribute attribute
+      add_morph_attribute base, attribute
       object.send(symbol, *args)
     end
   end
@@ -96,8 +102,8 @@ module Chas
     args.size > 0 && !args[0].nil? && !(args[0].is_a?(String) && args[0].strip.size == 0)
   end
 
-  def self.convert_to_morph_method_name label
-    name = label.to_s.downcase
+  def self.convert_to_morph_class_name label
+    name = label.to_s + ''
     name.tr!(',.:"\'/()\-*\\',' ')
     name.gsub!('%','percentage')
     name.strip!
@@ -105,6 +111,10 @@ module Chas
     name.gsub!(/\s/,'_')
     name.squeeze!('_')
     name
+  end
+
+  def self.convert_to_morph_method_name label
+    convert_to_morph_class_name label.to_s.downcase
   end
 
 end
@@ -239,8 +249,8 @@ module Morph
         "#{namespace.name}::#{name}".constantize
       end
 
-      def object_from_name name, namespace
-        name = name.to_s.camelize
+      def object_from_name name, namespace, &block
+        name = Chas.convert_to_morph_class_name(name).camelize
         begin
           type = class_constant namespace, name
         rescue NameError => e
@@ -258,7 +268,8 @@ module Morph
 
       def objects_from_array array, name, namespace
         if array.size > 0 && array.collect(&:class).uniq == [Hash]
-          array.map! { |hash| object_from_hash(hash, name.to_s.singularize, namespace) }
+          name = name.to_s.singularize
+          array.map! { |hash| object_from_hash(hash, name, namespace) }
         else
           array
         end
@@ -301,22 +312,15 @@ module Morph
       Chas.morph_methods(self)
     end
 
-    def add_morph_attribute attribute, *args
-      Chas.start_adding_morph_method(self)
-      class_eval "attr_accessor :#{attribute}"
-      Chas.finish_adding_morph_method(self)
-    end
-
     protected
 
-      def method_added symbol
-        Chas.add_method self, symbol
-      end
+    def method_added symbol
+      Chas.add_method self, symbol
+    end
 
-      def method_removed symbol
-        Chas.remove_method self, symbol
-      end
-
+    def method_removed symbol
+      Chas.remove_method self, symbol
+    end
   end
 
   module MethodMissing
