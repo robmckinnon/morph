@@ -61,7 +61,7 @@ describe Morph do
       end
 
       it 'should generate rails model generator script line' do
-        expect(Morph.script_generate(morphed_class ,:generator=>'model')).to eq "rails destroy model ExampleMorph; rails generate model ExampleMorph noise:string"
+        expect(Morph.script_generate(morphed_class, :generator => 'model')).to eq "rails destroy model ExampleMorph; rails generate model ExampleMorph noise:string"
       end
     end
 
@@ -117,6 +117,14 @@ describe Morph do
         expect(morphed_class.morph_methods).to eq ['every','every=']
         expect(another_morphed_class.morph_methods).to eq ['no','no=']
       end
+    end
+
+    it 'sends callbacks to registered listener' do
+      listener = double
+      Morph.register_listener listener
+      expect(listener).to receive(:call).with(ExampleMorph, :every)
+      @morph.every = 'which'
+      Morph.unregister_listener listener
     end
 
     it 'should call morph_attributes on both objects, when one object has a reference to another' do

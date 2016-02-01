@@ -21,6 +21,15 @@ module Chas
   @adding_morph_method = Hash.new {|hash,klass| hash[klass] = false } unless defined?(@adding_morph_method)
   @morph_methods = Hash.new {|hash,klass| hash[klass] = {} } unless defined?(@morph_methods)
   @morph_attributes = Hash.new {|hash,klass| hash[klass] = [] } unless defined?(@morph_attributes)
+  @listeners = {}
+
+  def self.register_listener listener
+    @listeners[listener.object_id] = listener
+  end
+
+  def self.unregister_listener listener
+    @listeners.delete(listener.object_id) if @listeners.has_key?(listener.object_id)
+  end
 
   def self.morph_classes
     @morph_attributes.keys
@@ -30,7 +39,10 @@ module Chas
     if adding_morph_method?(klass)
       @morph_methods[klass][symbol] = true
       is_writer = symbol.to_s =~ /=$/
-      @morph_attributes[klass] << symbol unless is_writer
+      unless is_writer
+        @morph_attributes[klass] << symbol
+        @listeners.values.each { |l| l.call klass, symbol }
+      end
     end
   end
 
@@ -79,7 +91,7 @@ module Chas
 
   def self.add_morph_attribute klass, attribute
     start_adding_morph_method(klass)
-    klass.class_eval "attr_accessor :#{attribute}"
+    klass.send(:attr_accessor, attribute)
     finish_adding_morph_method(klass)
   end
 
@@ -125,6 +137,14 @@ module Morph
   class << self
     def classes
       Chas.morph_classes
+    end
+
+    def register_listener listener
+      Chas.register_listener listener
+    end
+
+    def unregister_listener listener
+      Chas.unregister_listener listener
     end
 
     def generate_migrations object, options={}
@@ -178,11 +198,11 @@ module Morph
       from_hash hash, namespace
     end
 
-    def from_json json, root_key=nil, namespace=Morph, &block
+    def from_json json, root_key=nil, namespace=Morph
       require 'json' unless defined? JSON
       hash = JSON.parse json
       hash = { root_key => hash } if root_key
-      from_hash hash, namespace, &block
+      from_hash hash, namespace
     end
 
     def from_hash hash, namespace=Morph
@@ -249,7 +269,7 @@ module Morph
         "#{namespace.name}::#{name}".constantize
       end
 
-      def object_from_name name, namespace, &block
+      def object_from_name name, namespace
         name = Chas.convert_to_morph_class_name(name).camelize
         begin
           type = class_constant namespace, name
