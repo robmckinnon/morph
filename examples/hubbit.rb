@@ -1,32 +1,47 @@
 require 'morph'
+require 'open-uri'
+require 'yaml'
 
-require 'rubygems'; require 'nokogiri'; require 'open-uri'
+# Example of morph used to implement a Ruby github API.
+module Hubbit
+end
 
-# An example of Morph playing with Nokogiri
-class Hubbit
-  include Morph  # allows class to morph
-
-  def initialize name
-    doc = Nokogiri::HTML open("https://github.com/#{name}")
-
-    profile_fields = doc.search('.vcard dt')
-
-    profile_fields.each do |node|
-      label = node.inner_text
-      value = node.next_element.inner_text.strip
-
-      morph(label, value)  # morph magic adds accessor methods!
-    end
+module Hubbit::Listener
+  def self.call klass, symbol
+    klass.class_eval method_def(symbol) if url_method?(symbol)
   end
 
-  def member_since_date
-    Date.parse member_since
+  private
+  def self.url_method? symbol
+    symbol.to_s[/_url$/]
+  end
+
+  def self.attribute symbol
+    attribute = symbol.to_s.chomp('_url')
+    "_#{attribute}"
+  end
+
+  def self.method_def symbol
+    attribute = attribute(symbol)
+"
+def #{attribute}
+  unless @#{attribute}
+    url = send(:#{symbol}).split('{').first
+    json = open(url).read
+    @#{attribute} = Morph.from_json(json, :#{attribute.singularize}, Hubbit)
+  end
+  @#{attribute}
+end"
   end
 end
+
+Morph.register_listener Hubbit::Listener
 
 def Hubbit name
-  Hubbit.new name
+  url = "https://api.github.com/users/#{name}"
+  json = open(url).read
+  user = Morph.from_json(json, :user, Hubbit)
+  user
 end
 
-# why = Hubbit 'why'
-# dhh = Hubbit 'dhh'
+dhh = Hubbit 'dhh'
