@@ -66,7 +66,7 @@ module Chas
     methods = if RUBY_VERSION >= "1.9"
       @morph_methods[klass].keys.sort
     else
-      @morph_methods[klass].keys.sort.map(&:to_s)
+      @morph_methods[klass].keys.map(&:to_s).sort
     end
 
     if klass.superclass.respond_to?(:morph_attributes)

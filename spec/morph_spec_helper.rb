@@ -16,7 +16,7 @@ module MorphSpecHelperMethods
   def remove_morph_methods
     morphed_class.instance_methods.each do |method|
       begin
-        unless method.to_s[/received_message\?|should_not_receive|rspec_verify|unstub|rspec_reset|should_receive|as_null_object|stub_chain|stub\!|null_object?|stub/]
+        unless method.to_s[/received_message\?|pretty_print_inspect|should_not_receive|rspec_verify|unstub|rspec_reset|should_receive|as_null_object|stub_chain|stub\!|null_object?|stub/]
           remove_cmd = "remove_method :#{method}"
           morphed_class.class_eval(remove_cmd) unless (@original_instance_methods && @original_instance_methods.include?(method))
         end

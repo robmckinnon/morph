@@ -100,7 +100,9 @@ describe Morph do
 
     it 'returns morph classes' do
       @another_morph.ex = 'machina'
-      expect(Morph.classes.map(&:name)).to eq([ExampleMorph, AnotherMorph].map(&:name))
+      classes = Morph.classes.map(&:name)
+      expect(classes).to include('ExampleMorph')
+      expect(classes).to include('AnotherMorph')
     end
 
     it 'should have morph_method return appropriate methods for each class' do
