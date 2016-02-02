@@ -5,15 +5,12 @@ group :test do
 end
 
 group :development do
-  # gem 'fattr'
-  # gem 'arrayfields'
-  # gem 'map'
-  # gem 'metrical'
   gem 'rspec'
   gem 'echoe'
 end
 
 if RUBY_VERSION < '1.9'
+  gem 'i18n', '0.6.11'
   gem 'activesupport'
   gem 'fastercsv'
   gem 'rake', '~> 0.9.2.2' # required for travis builds
