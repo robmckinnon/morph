@@ -6,7 +6,6 @@ end
 
 group :development do
   gem 'rspec'
-  gem 'echoe'
 end
 
 if RUBY_VERSION < '1.9'
