@@ -13,6 +13,7 @@ if RUBY_VERSION < '1.9'
   gem 'activesupport', '~> 3.2.0'
   gem 'fastercsv'
   gem 'rake', '~> 0.9.2.2' # required for travis builds
+  gem 'json'
 else
   gem 'activesupport'
   gem 'rake'
