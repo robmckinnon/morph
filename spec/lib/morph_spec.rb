@@ -617,7 +617,7 @@ xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.x
   end
 
   describe 'creating from json' do
-    require 'json'
+    require 'json' unless defined? JSON
 
     let(:company_details_search) { Morph.from_json(search_items_hash.to_json) }
 
@@ -631,7 +631,7 @@ xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.x
   end
 
   describe 'creating from json that is not single key hash' do
-    require 'json'
+    require 'json' unless defined? JSON
 
     let(:company_details_search) do
       array = search_items_hash['CompanyDetails']['SearchItems']
