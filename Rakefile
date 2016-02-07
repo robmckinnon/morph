@@ -1,37 +1,58 @@
 require 'rubygems'
+require 'rubygems/package_task'
+require 'rdoc/task'
 require './lib/morph'
 
-begin
-  require 'rspec'
-rescue LoadError
-  puts "\nYou need to install the rspec gem to perform meta operations on this gem"
-  puts "  gem install rspec\n"
+require 'rspec'
+require 'rspec/core/rake_task'
+RSpec::Core::RakeTask.new do |t|
+  t.rspec_opts = %w(--format documentation --colour)
 end
 
-begin
-  require 'echoe'
+task :default => ['spec']
 
-  Echoe.new("morph") do |m|
-    m.author = ["Rob McKinnon"]
-    m.email = ["rob ~@nospam@~ rubyforge.org"]
-    m.summary = 'Morph mixin allows you to emerge class definitions via calling assignment methods.'
-    m.description = File.readlines("README").first
-    m.url = 'https://github.com/robmckinnon/morph'
-    m.install_message = 'Read usage examples at: https://github.com/robmckinnon/morph#readme'
-    m.version = Morph::VERSION
-    m.project = "morph"
-    m.rdoc_options << '--inline-source'
-    m.rdoc_pattern = ["README", "CHANGELOG", "LICENSE"]
-    m.runtime_dependencies = ["activesupport >=2.0.2"]
-    m.development_dependencies = ['rspec','echoe']
-  end
+spec = Gem::Specification.new do |s|
+  s.name              = 'morph'
+  s.version           = Morph::VERSION
+  s.summary           = 'Morph mixin allows you to emerge class definitions via assignment method calls.'
+  s.author            = 'Rob McKinnon'
+  s.email             = 'rob ~@nospam@~ rubyforge.org'
+  s.homepage          = 'https://github.com/robmckinnon/morph'
 
-rescue LoadError
-  puts "\nYou need to install the echoe gem to perform meta operations on this gem"
-  puts "  gem install echoe\n\n"
+  s.has_rdoc          = true
+  s.extra_rdoc_files  = %w(README.md)
+  s.rdoc_options      = %w(--main README.md)
+
+  s.license           = 'MIT'
+  s.files             = %w(CHANGELOG LICENSE) + Dir.glob('{lib}/**/*')
+  s.require_paths     = ['lib']
+
+  s.add_runtime_dependency('activesupport', '>= 2.0.2')
+  s.add_development_dependency('rspec')
 end
 
-desc "Open an irb session preloaded with this library"
-task :console do
-  sh "irb -rubygems -r ./lib/morph.rb"
+# This task actually builds the gem.
+Gem::PackageTask.new(spec) do |pkg|
+  pkg.gem_spec = spec
+end
+
+desc "Build the gemspec file #{spec.name}.gemspec"
+task :gemspec do
+  file = File.dirname(__FILE__) + "/#{spec.name}.gemspec"
+  File.open(file, 'w') {|f| f << spec.to_ruby }
+end
+
+# If you don't want to generate the .gemspec file, just remove this line.
+task :package => :gemspec
+
+# Generate documentation
+RDoc::Task.new do |rd|
+  rd.main = 'README.md'
+  rd.rdoc_files.include('README.md', 'lib/**/*.rb')
+  rd.rdoc_dir = 'rdoc'
+end
+
+desc 'Clear out RDoc and generated packages'
+task :clean => [:clobber_rdoc, :clobber_package] do
+  rm "#{spec.name}.gemspec"
 end
