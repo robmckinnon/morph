@@ -1,5 +1,4 @@
-Morph mixin allows you to emerge Ruby class definitions from data via calling assignment methods.
-
+Morph allows you to emerge Ruby class definitions from data or by calling assignment methods.
 
 == Installing Morph
 
@@ -9,9 +8,68 @@ To use Morph:
 
  require 'morph'
 
+Tested to work with Ruby 1.8 - 2.3, JRuby 9, and Rubinius 3.
+
+== Morph creating classes +from_json+
+
+Here's an example showing Morph creating classes and objects from JSON:
+
+ json = '{
+   "id": "3599110793",
+   "type": "PushEvent",
+   "actor": {
+     "id": 3447,
+     "login": "robmckinnon",
+     "url": "https://api.github.com/users/robmckinnon"
+   },
+   "repo": {
+     "id": 5092,
+     "name": "robmckinnon/morph",
+     "url": "https://api.github.com/repos/robmckinnon/morph"
+   }
+ }'
+
+ module Github; end
+
+ type = :push_event
+ namespace = Github
+
+ event = Morph.from_json json, type, namespace
+
+ # => <Github::PushEvent @id="3599110793", @type="PushEvent",
+        @actor=#<Github::Actor:0x007faa0c86b790 @id=3447, @login="robmckinnon",
+          @url="https://api.github.com/users/robmckinnon">,
+        @repo=#<Github::Repo:0x007faa0c869198 @id=5092, @name="robmckinnon/morph",
+          @url="https://api.github.com/repos/robmckinnon/morph">
+      >
+
+ event.class
+
+ # => Github::PushEvent
+
+ event.class.morph_attributes
+
+ # => [:id, :type, :actor, :repo]
+
+ event.actor.class
+
+ # => Github::Actor
+
+ event.repo.class
+
+ # => Github::Repo
+
+If namespace module not provided, new classes are created in Morph module.
+
+ event = Morph.from_json json, type, namespace
+
+ event.class
+
+ # => Morph::PushEvent
+
 == Morph creating classes +from_csv+
 
-Here's example code showing Morph playing with CSV (comma-separated values):
+Here's an example showing Morph playing with CSV (comma-separated values):
 
  csv = %Q[name,party\nTed Roe,red\nAli Davidson,blue\nSue Smith,green]
 
@@ -64,103 +122,52 @@ Here's example code showing Morph playing with XML:
 
  # => "Aberdeen City Council"
 
-== Morph playing with +Nokogiri+
+== Registering a listener to new class / methods via +register_listener+
 
-Here's example code showing Morph playing with Nokogiri in Ruby 1.9.2:
+You can use +register_listener+ to get callbacks when new methods on a class are
+created.
 
- require 'morph'; require 'nokogiri'; require 'open-uri'
+For example given Morph used as a mixin:
 
+ class Project; include Morph; end
+ project = Project.new
 
- class Hubbit
-   include Morph  # allows class to morph
+Register listener:
 
-   def initialize name
-     doc = Nokogiri::HTML open("https://github.com/#{name}")
-
-     profile_fields = doc.search('.vcard dt')
-
-     profile_fields.each do |node|
-       label = node.inner_text
-       value = node.next_element.inner_text.strip
-
-       morph(label, value)  # morph magic adds accessor methods!
-     end
-   end
-
-   def member_since_date
-     Date.parse member_since
-   end
+ listener = -> (klass, method) do
+   puts "class: #{klass.to_s} --- method: #{method}"
  end
+ Morph.register_listener listener
 
- def Hubbit name; Hubbit.new name; end
+Callback prints string as new methods are creaated via assignment calls:
 
-The model emerges from the data. Let's start by looking up 'why':
+ project.deadline = "11 11 2075"
+ # class: Project --- method: deadline
 
- why = Hubbit 'why'
+ project.completed = true
+ # class: Project --- method: completed
 
-What new methods do we have?
+To unregister a listener use +unregister_listener+:
 
- Hubbit.morph_methods.map {|m| m.to_s}
+ Morph.unregister_listener listener
 
- #=> ["location", "location=", "member_since", "member_since=", "name", "name="]
-
-Ah-ha, so we have a name attribute now:
-
- why.name # => "Squatting until _why gets home."
-
-We wrote a +member_since_date+ method in our class, let's call that now:
-
- why.member_since_date # => Wed, 19 Aug 2009
-
-
-Let's add some of why's projects:
-
- why.projects = %w[shoes hacketyhack camping hoodwinkd hpricot
-                  markaby mousehole parkplace poignant sandbox]
-
-That why's a productive fellow! Note new accessor methods have been added:
-
- Hubbit.morph_methods.map {|m| m.to_s}
-
- #=> ["location", "location=", "member_since", "member_since=", "name", "name=",
- #    "projects", "projects="]
-
-
-Let's do some more morphing:
-
- dhh = Hubbit 'dhh'
-
-Do we have more methods now?
-
- Hubbit.morph_methods.map {|m| m.to_s}
-
- #=> ["company", "company=", "email", "email=", "location", "location=",
- #    "member_since", "member_since=", "name", "name=", "projects", "projects=",
- #    "website_blog", "website_blog="]
-
-So, a new company method has appeared:
-
- dhh.company #=> "37signals"
-
+For an example of Morph's +register_listener+ being used to
+[create a Github API](https://github.com/robmckinnon/hubbit/blob/master/lib/hubbit.rb)
+see the [Hubbit module](https://github.com/robmckinnon/hubbit/blob/master/lib/hubbit.rb).
 
 == Morph making sample Active Record line via +script_generate+
 
 Time to generate an Active Record model? Get a sample script line like this:
 
- Morph.script_generate(Hubbit)
-
- #=> "rails destroy model Hubbit;
- #    rails generate model Hubbit company:string email:string location:string
- #          member_since:string name:string projects:string website_blog:string"
+ Morph.script_generate(Project)
+ #=> "rails destroy model Project;
+ #    rails generate model Project completed:string deadline:string
 
 or specify the generator:
 
  Morph.script_generate(Hubbit, :generator => 'rspec_model')
-
- #=> "rails destroy rspec_model Hubbit;
- #    rails generate rspec_model Hubbit company:string email:string
- #          location:string member_since:string name:string projects:string
- #          website_blog:string"
+ #=> "rails destroy rspec_model Project;
+ #    rails generate rspec_model Project completed:string deadline:string
 
 You'll have to edit this as it currently sets all data types to be string, and
 doesn't understand associations.
@@ -206,7 +213,6 @@ Want to retrieve all that as a nested hash of values? No problem:
 
 == Last bits
 
-See examples/ directory for some example code.
 See LICENSE for the terms of this software.
 
  .                                                     ,
