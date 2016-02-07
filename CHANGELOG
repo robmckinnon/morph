@@ -1,3 +1,5 @@
+v0.4.0. add from_json() and register_listener() methods
+
 v0.3.7. don't mix in private methods when Morph is included
 
 v0.3.6. call to_time() on XMLRPC::DateTime when setting it as an attribute value
@@ -6,7 +8,7 @@ v0.3.5. retain morph_methods when inheriting class and parent both include Morph
 
 v0.3.4. return instance morph_attributes ordered by original addition of attribute
 
-v0.3.3. removed show_ruby() method; updated script_generate() to utilise new rails commands
+v0.3.3. remove show_ruby() method; updated script_generate() to utilise new rails commands
 
 v0.3.2. from_hash() can now handle keys that are symbols
 
@@ -14,9 +16,9 @@ v0.3.1. only show fastercsv install message if Morph.from_csv() called
 
 v0.3.0. modifications for ruby 1.9.2 compatibility
 
-v0.2.9. added from_csv(); require fastercsv; added morph_attributes() class method
+v0.2.9. add from_csv(); require fastercsv; add morph_attributes() class method
 
-v0.2.8. added from_xml() and from_tsv(); updated for active_support; fixed from_hash() when hash root is an array
+v0.2.8. add from_xml() and from_tsv(); updated for active_support; fix from_hash() when hash root is an array
 
 v0.2.7. handle dash when converting to method name, reported by danwrong
 
@@ -26,21 +28,21 @@ v0.2.5. camelize names for classes in from_hash()
 
 v0.2.4. from_hash() creates classes in Morph namespace and handles arrays of hashes
 
-v0.2.3. added Morph.from_hash method
+v0.2.3. add Morph.from_hash method
 
-v0.2.2. changed rubygem requirement to be >= 1.2 instead of = 1.2
+v0.2.2. change rubygem requirement to be >= 1.2 instead of = 1.2
 
 v0.2.1. better accomodation of unicode method names
 
-v0.2.0. added script_generate method; fixed bug occurring when two morph classes exist
+v0.2.0. add script_generate method; fix bug occurring when two morph classes exist
 
-v0.1.5. added morph_attributes instance method
+v0.1.5. add morph_attributes instance method
 
 v0.1.4. can now pass code block to customize the dynamically added methods
 
 v0.1.3. can now set hash of attributes via morph method
 
-v0.1.2. fixed problems in packaging of v0.1.1 gem
+v0.1.2. fix problems in packaging of v0.1.1 gem
 
 v0.1.1. calling unknown reader method no longer adds accessor methods to class
 
