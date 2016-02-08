@@ -1,5 +1,7 @@
 Morph allows you to emerge Ruby class definitions from data or by calling assignment methods.
 
+[![Build Status](https://travis-ci.org/robmckinnon/morph.svg?branch=master)](https://travis-ci.org/robmckinnon/morph)
+
 ## Installing Morph
 
     gem install morph
