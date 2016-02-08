@@ -61,7 +61,7 @@ describe Morph do
       end
 
       it 'should generate rails model generator script line' do
-        expect(Morph.script_generate(morphed_class ,:generator=>'model')).to eq "rails destroy model ExampleMorph; rails generate model ExampleMorph noise:string"
+        expect(Morph.script_generate(morphed_class, :generator => 'model')).to eq "rails destroy model ExampleMorph; rails generate model ExampleMorph noise:string"
       end
     end
 
@@ -98,6 +98,13 @@ describe Morph do
       initialize_another_morph
     end
 
+    it 'returns morph classes' do
+      @another_morph.ex = 'machina'
+      classes = Morph.classes.map(&:name)
+      expect(classes).to include('ExampleMorph')
+      expect(classes).to include('AnotherMorph')
+    end
+
     it 'should have morph_method return appropriate methods for each class' do
       @morph.every = 'where'
       @another_morph.no = 'where'
@@ -112,6 +119,14 @@ describe Morph do
         expect(morphed_class.morph_methods).to eq ['every','every=']
         expect(another_morphed_class.morph_methods).to eq ['no','no=']
       end
+    end
+
+    it 'sends callbacks to registered listener' do
+      listener = double
+      Morph.register_listener listener
+      expect(listener).to receive(:call).with(ExampleMorph, :every)
+      @morph.every = 'which'
+      Morph.unregister_listener listener
     end
 
     it 'should call morph_attributes on both objects, when one object has a reference to another' do
@@ -375,56 +390,68 @@ describe Morph do
 
   describe "when converting label text to morph method name" do
 
-    it 'should covert dash to underscore' do
+    it 'coverts dash to underscore' do
       check_convert_to_morph_method_name 'hi-time', 'hi_time'
     end
 
-    it 'should upper case to lower case' do
+    it 'converts upper case to lower case' do
       check_convert_to_morph_method_name 'CaSe', 'case'
     end
 
-    it 'should convert single space to underscorce' do
+    it 'converts single space to underscorce' do
       check_convert_to_morph_method_name 'First reading', 'first_reading'
     end
 
-    it 'should convert multiple spaces to single underscorce' do
+    it 'converts multiple spaces to single underscorce' do
       check_convert_to_morph_method_name "First  reading", 'first_reading'
     end
 
-    it 'should convert tabs to single underscorce' do
+    it 'converts tabs to single underscorce' do
       check_convert_to_morph_method_name "First\t\treading", 'first_reading'
     end
 
-    it 'should convert new line chars to single underscorce' do
+    it 'converts new line chars to single underscorce' do
       check_convert_to_morph_method_name "First\r\nreading", 'first_reading'
     end
 
-    it 'should remove leading and trailing whitespace new line chars to single underscorce' do
+    it 'removes leading and trailing whitespace new line chars to single underscorce' do
       check_convert_to_morph_method_name " \t\r\nFirst reading \t\r\n", 'first_reading'
     end
 
-    it 'should remove trailing colon surrounded by whitespace' do
+    it 'removes trailing colon surrounded by whitespace' do
       check_convert_to_morph_method_name "First reading : ", 'first_reading'
     end
 
-    it 'should remove parenthesis' do
+    it 'removes parenthesis' do
       check_convert_to_morph_method_name 'Nav(GBX)', 'nav_gbx'
     end
 
-    it 'should remove *' do
+    it 'removes *' do
       check_convert_to_morph_method_name 'Change**', 'change'
     end
 
-    it 'should convert % character to the text "percentage"' do
+    it 'converts % character to the text "percentage"' do
       check_convert_to_morph_method_name '% Change', 'percentage_change'
     end
 
-    it 'should precede leading digit with an underscore character' do
+    it 'precedes leading digit with an underscore character' do
       check_convert_to_morph_method_name '52w_high', '_52w_high'
     end
 
-    it 'should handle unicode name' do
+    it 'handles unicode name' do
       check_convert_to_morph_method_name '年龄', '年龄'
+    end
+
+    it 'removes forward and back slash' do
+      check_convert_to_morph_method_name 'ready/steady\go', 'ready_steady_go'
+    end
+
+    it 'removes single and double quotes' do
+      check_convert_to_morph_method_name 'ready"steady\'go', 'ready_steady_go'
+    end
+
+    it 'removes dots and commas' do
+      check_convert_to_morph_method_name 'config_for.rb,', 'config_for_rb'
     end
   end
 
@@ -490,19 +517,16 @@ describe Morph do
     }
   end
 
-  describe 'creating from hash' do
+  shared_examples 'creates correctly' do
     it 'should create classes and object instances with array of hashes' do
-      company_details = Morph.from_hash(search_items_hash)
-      expect(company_details.search_items.first.class.name).to eq 'Morph::SearchItem'
-      expect(company_details.search_items.first.data_set).to eq 'LIVE'
-      expect(company_details.search_items.first.company_name).to eq 'CANONGROVE LIMITED'
+      items = company_details_search.is_a?(Array) ? company_details_search : company_details_search.search_items
+
+      expect(items.first.class.name).to eq 'Morph::SearchItem'
+      expect(items.first.data_set).to eq 'LIVE'
+      expect(items.first.company_name).to eq 'CANONGROVE LIMITED'
     end
 
     it 'should create classes and object instances' do
-      Object.const_set 'Company', Module.new
-      Company.const_set 'House', Module.new
-
-      company_details = Morph.from_hash(company_details_hash, Company::House)
       expect(company_details.class.name).to eq 'Company::House::CompanyDetails'
       morph_methods = company_details.class.morph_methods
       if RUBY_VERSION >= "1.9"
@@ -578,6 +602,50 @@ xmlns: http://xmlgw.companieshouse.gov.uk/v1-0
 xmlns_xsi: http://www.w3.org/2001/XMLSchema-instance
 xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.xsd|
     end
+  end
+
+  describe 'creating from hash' do
+    let(:company_details_search) { Morph.from_hash(search_items_hash) }
+
+    let(:company_details) do
+      Object.const_set 'Company', Module.new
+      Company.const_set 'House', Module.new
+      Morph.from_hash(company_details_hash, Company::House)
+    end
+
+    include_examples 'creates correctly'
+  end
+
+  describe 'creating from json' do
+    require 'json' unless defined? JSON
+
+    let(:company_details_search) { Morph.from_json(search_items_hash.to_json) }
+
+    let(:company_details) do
+      Object.const_set 'Company', Module.new unless defined? Company
+      Company.const_set 'House', Module.new unless defined? Company::House
+      Morph.from_json(company_details_hash.to_json, nil, Company::House)
+    end
+
+    include_examples 'creates correctly'
+  end
+
+  describe 'creating from json that is not single key hash' do
+    require 'json' unless defined? JSON
+
+    let(:company_details_search) do
+      array = search_items_hash['CompanyDetails']['SearchItems']
+      Morph.from_json(array.to_json, 'SearchItems')
+    end
+
+    let(:company_details) do
+      Object.const_set 'Company', Module.new unless defined? Company
+      Company.const_set 'House', Module.new unless defined? Company::House
+      multi_key_hash = company_details_hash['CompanyDetails']
+      Morph.from_json(multi_key_hash.to_json, 'CompanyDetails', Company::House)
+    end
+
+    include_examples 'creates correctly'
   end
 
   describe 'creating from xml' do
@@ -705,6 +773,14 @@ Ali Davidson,labour,,Basildon District Council,
         morph.x = 'y'
         expect(morph.x).to eq 'y'
       end
+    end
+  end
+
+  describe 'mixin ClassMethods' do
+    it 'hides @@adding_morph_method @@morph_methods @@morph_attributes' do
+      eval 'class Tree; include Morph; end; t = Tree.new; t.this = "that"'
+      expect(Tree.const_get(:ClassMethods).class_variables).to eq []
+      expect(Tree.class_variables).to eq []
     end
   end
 

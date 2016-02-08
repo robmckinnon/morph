@@ -17,10 +17,136 @@ rescue Exception => e
   end
 end
 
+module Chas
+  @adding_morph_method = Hash.new {|hash,klass| hash[klass] = false } unless defined?(@adding_morph_method)
+  @morph_methods = Hash.new {|hash,klass| hash[klass] = {} } unless defined?(@morph_methods)
+  @morph_attributes = Hash.new {|hash,klass| hash[klass] = [] } unless defined?(@morph_attributes)
+  @listeners = {}
+
+  def self.register_listener listener
+    @listeners[listener.object_id] = listener
+  end
+
+  def self.unregister_listener listener
+    @listeners.delete(listener.object_id) if @listeners.has_key?(listener.object_id)
+  end
+
+  def self.morph_classes
+    @morph_attributes.keys
+  end
+
+  def self.add_method klass, symbol
+    if adding_morph_method?(klass)
+      @morph_methods[klass][symbol] = true
+      is_writer = symbol.to_s =~ /=$/
+      unless is_writer
+        @morph_attributes[klass] << symbol
+        @listeners.values.each { |l| l.call klass, symbol }
+      end
+    end
+  end
+
+  def self.remove_method klass, symbol
+    if @morph_methods[klass].has_key? symbol
+      @morph_methods[klass].delete symbol
+      is_writer = symbol.to_s =~ /=$/
+      @morph_attributes[klass].delete(symbol) unless is_writer
+    end
+  end
+
+  def self.morph_attributes klass
+    if klass.superclass.respond_to?(:morph_attributes)
+      @morph_attributes[klass] + klass.superclass.morph_attributes
+    else
+      @morph_attributes[klass] + []
+    end
+  end
+
+  def self.morph_methods klass
+    methods = if RUBY_VERSION >= "1.9"
+      @morph_methods[klass].keys.sort
+    else
+      @morph_methods[klass].keys.map(&:to_s).sort
+    end
+
+    if klass.superclass.respond_to?(:morph_attributes)
+      methods += klass.superclass.morph_methods
+    end
+    methods
+  end
+
+  private
+  def self.adding_morph_method? klass
+    @adding_morph_method[klass]
+  end
+
+  public
+  def self.start_adding_morph_method klass
+    @adding_morph_method[klass] = true
+  end
+
+  def self.finish_adding_morph_method klass
+    @adding_morph_method[klass] = false
+  end
+
+  def self.add_morph_attribute klass, attribute
+    start_adding_morph_method(klass)
+    klass.send(:attr_accessor, attribute)
+    finish_adding_morph_method(klass)
+  end
+
+  def self.morph_method_missing object, symbol, *args
+    attribute = symbol.to_s.chomp '='
+    if RUBY_VERSION >= "1.9"
+      attribute = attribute.to_sym
+    end
+
+    if Object.instance_methods.include?(attribute)
+      raise "'#{attribute}' is an instance_method on Object, cannot create accessor methods for '#{attribute}'"
+    elsif argument_provided? args
+      base = object.class
+      add_morph_attribute base, attribute
+      object.send(symbol, *args)
+    end
+  end
+
+  def self.argument_provided? args
+    args.size > 0 && !args[0].nil? && !(args[0].is_a?(String) && args[0].strip.size == 0)
+  end
+
+  def self.convert_to_morph_class_name label
+    name = label.to_s + ''
+    name.tr!(',.:"\'/()\-*\\',' ')
+    name.gsub!('%','percentage')
+    name.strip!
+    name.gsub!(/^(\d)/, '_\1')
+    name.gsub!(/\s/,'_')
+    name.squeeze!('_')
+    name
+  end
+
+  def self.convert_to_morph_method_name label
+    convert_to_morph_class_name label.to_s.downcase
+  end
+
+end
+
 module Morph
-  VERSION = "0.3.7" unless defined? Morph::VERSION
+  VERSION = '0.4.0' unless defined? Morph::VERSION
 
   class << self
+    def classes
+      Chas.morph_classes
+    end
+
+    def register_listener listener
+      Chas.register_listener listener
+    end
+
+    def unregister_listener listener
+      Chas.unregister_listener listener
+    end
+
     def generate_migrations object, options={}
       options[:ignore] ||= []
       options[:belongs_to_id] ||= ''
@@ -72,19 +198,22 @@ module Morph
       from_hash hash, namespace
     end
 
+    def from_json json, root_key=nil, namespace=Morph
+      require 'json' unless defined? JSON
+      hash = JSON.parse json
+      hash = { root_key => hash } if root_key
+      from_hash hash, namespace
+    end
+
     def from_hash hash, namespace=Morph
       if hash.keys.size == 1
-        key = hash.keys.first
+        name = hash.keys.first
 
-        if hash[key].is_a? Hash
-          attributes = hash[key]
-          object = object_from_name(key, namespace)
-          add_to_object object, attributes, namespace
-          object
-        elsif hash[key].is_a? Array
-          array = hash[key]
-          name = key.to_s.singularize
-          objects_from_array(array, name, namespace)
+        case hash[name]
+        when Hash
+          object_from_hash hash[name], name, namespace
+        when Array
+          objects_from_array hash[name], name, namespace
         else
           raise 'hash root value must be a Hash or an Array'
         end
@@ -104,7 +233,6 @@ module Morph
 
     def included(base)
       base.extend ClassMethods
-      base.send(:include, InstanceMethods)
       base.send(:include, MethodMissing)
     end
 
@@ -142,7 +270,7 @@ module Morph
       end
 
       def object_from_name name, namespace
-        name = name.to_s.camelize
+        name = Chas.convert_to_morph_class_name(name).camelize
         begin
           type = class_constant namespace, name
         rescue NameError => e
@@ -160,7 +288,8 @@ module Morph
 
       def objects_from_array array, name, namespace
         if array.size > 0 && array.collect(&:class).uniq == [Hash]
-          array.map! { |hash| object_from_hash(hash, name.singularize, namespace) }
+          name = name.to_s.singularize
+          array.map! { |hash| object_from_hash(hash, name, namespace) }
         else
           array
         end
@@ -195,144 +324,81 @@ module Morph
 
   module ClassMethods
 
-    @@adding_morph_method = Hash.new {|hash,klass| hash[klass] = false } unless defined?(@@adding_morph_method)
-    @@morph_methods = Hash.new {|hash,klass| hash[klass] = {} } unless defined?(@@morph_methods)
-    @@morph_attributes = Hash.new {|hash,klass| hash[klass] = [] } unless defined?(@@morph_attributes)
-
     def morph_attributes
-      if superclass.respond_to?(:morph_attributes)
-        @@morph_attributes[self] + superclass.morph_attributes
-      else
-        @@morph_attributes[self] + []
-      end
+      Chas.morph_attributes(self)
     end
 
     def morph_methods
-      methods = if RUBY_VERSION >= "1.9"
-        @@morph_methods[self].keys.sort.map(&:to_sym)
-      else
-        @@morph_methods[self].keys.sort
-      end
-
-      if superclass.respond_to?(:morph_attributes)
-        methods += superclass.morph_methods
-      end
-      methods
-    end
-
-    def add_morph_attribute attribute, *args
-      @@adding_morph_method[self] = true
-      class_eval "attr_accessor :#{attribute}"
-      @@adding_morph_method[self] = false
+      Chas.morph_methods(self)
     end
 
     protected
 
-      def method_added symbol
-        if @@adding_morph_method[self]
-          @@morph_methods[self][symbol.to_s] = true
-          is_writer = symbol.to_s =~ /=$/
-          @@morph_attributes[self] << symbol unless is_writer
-        end
-      end
+    def method_added symbol
+      Chas.add_method self, symbol
+    end
 
-      def method_removed symbol
-        if @@morph_methods[self].has_key? symbol.to_s
-          @@morph_methods[self].delete symbol.to_s
-          is_writer = symbol.to_s =~ /=$/
-          @@morph_attributes[self].delete(symbol) unless is_writer
-        end
-      end
-
+    def method_removed symbol
+      Chas.remove_method self, symbol
+    end
   end
 
   module MethodMissing
     def method_missing symbol, *args
       is_writer = symbol.to_s =~ /=$/
       if is_writer
-        Morph::InstanceMethods::Helper.morph_method_missing(self, symbol, *args)
+        Chas.morph_method_missing(self, symbol, *args)
       else
         super
       end
     end
   end
 
-  module InstanceMethods
-
-    #
-    # Set attribute value(s). Adds accessor methods to class if
-    # they are not already present.
-    #
-    # Can be called with a +string+ and a value, a +symbol+ and a value,
-    # or with a +hash+ of attribute to value pairs. For example.
-    #
-    #   require 'rubygems'; require 'morph'
-    #
-    #   class Order; include Morph; end
-    #
-    #   order = Order.new
-    #   order.morph :drink => 'tea', :sugars => 2, 'milk' => 'yes please'
-    #   order.morph 'Payment type:', 'will wash dishes'
-    #   order.morph :lemon, false
-    #
-    #   p order # -> #<Order:0x33c50c @lemon=false, @milk="yes please",
-    #                @payment_type="will wash dishes", @sugars=2, @drink="tea">
-    #
-    def morph attributes_or_label, value=nil
-      if attributes_or_label.is_a? Hash
-        attributes_or_label.each { |a, v| morph(a, v) }
-      else
-        attribute = Helper.convert_to_morph_method_name(attributes_or_label)
-        send("#{attribute}=".to_sym, value)
-      end
-    end
-
-    def morph_attributes
-      attributes = self.class.morph_attributes.inject({}) do |hash, attribute|
-        unless attribute =~ /=\Z/
-          symbol = attribute.to_sym
-          value = send(symbol)
-
-          value.each do |key, v|
-            value[key] = v.morph_attributes if v.respond_to?(:morph_attributes)
-          end if value.is_a? Hash
-
-          value = value.collect {|v| v.respond_to?(:morph_attributes) ? v.morph_attributes : v } if value.is_a? Array
-          value = value.morph_attributes if value.respond_to? :morph_attributes
-
-
-          hash[symbol] = value
-        end
-        hash
-      end
-    end
-
-    module Helper
-
-      def self.morph_method_missing object, symbol, *args
-        attribute = symbol.to_s.chomp '='
-        if RUBY_VERSION >= "1.9"
-          attribute = attribute.to_sym
-        end
-
-        if Object.instance_methods.include?(attribute)
-          raise "'#{attribute}' is an instance_method on Object, cannot create accessor methods for '#{attribute}'"
-        elsif Helper.argument_provided? args
-          base = object.class
-          base.add_morph_attribute attribute
-          object.send(symbol, *args)
-        end
-      end
-
-      def self.argument_provided? args
-        args.size > 0 && !args[0].nil? && !(args[0].is_a?(String) && args[0].strip.size == 0)
-      end
-
-      def self.convert_to_morph_method_name label
-        name = label.to_s.downcase.tr('()\-*',' ').gsub("'",' ').gsub('/',' ').gsub('%','percentage').strip.chomp(':').strip.gsub(/\s/,'_').squeeze('_')
-        name = '_'+name if name =~ /^\d/
-        name
-      end
+  #
+  # Set attribute value(s). Adds accessor methods to class if
+  # they are not already present.
+  #
+  # Can be called with a +string+ and a value, a +symbol+ and a value,
+  # or with a +hash+ of attribute to value pairs. For example.
+  #
+  #   require 'rubygems'; require 'morph'
+  #
+  #   class Order; include Morph; end
+  #
+  #   order = Order.new
+  #   order.morph :drink => 'tea', :sugars => 2, 'milk' => 'yes please'
+  #   order.morph 'Payment type:', 'will wash dishes'
+  #   order.morph :lemon, false
+  #
+  #   p order # -> #<Order:0x33c50c @lemon=false, @milk="yes please",
+  #                @payment_type="will wash dishes", @sugars=2, @drink="tea">
+  #
+  def morph attributes_or_label, value=nil
+    if attributes_or_label.is_a? Hash
+      attributes_or_label.each { |a, v| morph(a, v) }
+    else
+      attribute = Chas.convert_to_morph_method_name(attributes_or_label)
+      send("#{attribute}=".to_sym, value)
     end
   end
+
+  def morph_attributes
+    attributes = self.class.morph_attributes.inject({}) do |hash, attribute|
+      unless attribute =~ /=\Z/
+        symbol = attribute.to_sym
+        value = send(symbol)
+
+        value.each do |key, v|
+          value[key] = v.morph_attributes if v.respond_to?(:morph_attributes)
+        end if value.is_a? Hash
+
+        value = value.collect {|v| v.respond_to?(:morph_attributes) ? v.morph_attributes : v } if value.is_a? Array
+        value = value.morph_attributes if value.respond_to? :morph_attributes
+
+        hash[symbol] = value
+      end
+      hash
+    end
+  end
+
 end

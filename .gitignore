@@ -8,3 +8,4 @@ doc
 .rvmrc
 Gemfile.lock
 tmp
+rdoc
