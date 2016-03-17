@@ -4,11 +4,15 @@ Morph allows you to emerge Ruby class definitions from data or by calling assign
 
 ## Installing Morph
 
+```rb
     gem install morph
+```
 
 To use Morph:
 
+```rb
     require 'morph'
+```
 
 Tested to work with Ruby 1.8 - 2.3, JRuby 9, and Rubinius 3.
 
@@ -16,6 +20,7 @@ Tested to work with Ruby 1.8 - 2.3, JRuby 9, and Rubinius 3.
 
 Here's an example showing Morph creating classes and objects from JSON:
 
+```rb
     json = '{
       "id": "3599110793",
       "type": "PushEvent",
@@ -39,40 +44,34 @@ Here's an example showing Morph creating classes and objects from JSON:
     event = Morph.from_json json, type, namespace
 
     # => <Github::PushEvent @id="3599110793", @type="PushEvent",
-        @actor=#<Github::Actor:0x007faa0c86b790 @id=3447, @login="robmckinnon",
-          @url="https://api.github.com/users/robmckinnon">,
-        @repo=#<Github::Repo:0x007faa0c869198 @id=5092, @name="robmckinnon/morph",
-          @url="https://api.github.com/repos/robmckinnon/morph">
-      >
+    #   @actor=#<Github::Actor:0x007faa0c86b790 @id=3447, @login="robmckinnon",
+    #     @url="https://api.github.com/users/robmckinnon">,
+    #   @repo=#<Github::Repo:0x007faa0c869198 @id=5092, @name="robmckinnon/morph",
+    #     @url="https://api.github.com/repos/robmckinnon/morph">
+    # >
 
-    event.class
+    event.class                   # => Github::PushEvent
 
-    # => Github::PushEvent
+    event.class.morph_attributes  # => [:id, :type, :actor, :repo]
 
-    event.class.morph_attributes
+    event.actor.class             # => Github::Actor
 
-    # => [:id, :type, :actor, :repo]
-
-    event.actor.class
-
-    # => Github::Actor
-
-    event.repo.class
-
-    # => Github::Repo
+    event.repo.class              # => Github::Repo
+```
 
 If namespace module not provided, new classes are created in Morph module.
 
+```rb
     event = Morph.from_json json, type, namespace
 
-    event.class
-
-    # => Morph::PushEvent
+    event.class  # => Morph::PushEvent
+```
 
 ## Morph creating classes `from_csv`
 
 Here's an example showing Morph playing with CSV (comma-separated values):
 
+```rb
     csv = %Q[name,party\nTed Roe,red\nAli Davidson,blue\nSue Smith,green]
 
     people = Morph.from_csv(csv, 'person')
@@ -81,14 +80,14 @@ Here's an example showing Morph playing with CSV (comma-separated values):
        #<Morph::Person @name="Ali Davidson", @party="blue">,
        #<Morph::Person @name="Sue Smith", @party="green">]
 
-    people.last.party
-
-    # => "green"
+    people.last.party  # => "green"
+```
 
 ## Morph creating classes `from_tsv`
 
 Here's example code showing Morph playing with TSV (tab-separated values):
 
+```rb
     tsv = %Q[name\tparty\nTed Roe\tred\nAli Davidson\tblue\nSue Smith\tgreen]
 
     people = Morph.from_tsv(tsv, 'person')
@@ -97,14 +96,14 @@ Here's example code showing Morph playing with TSV (tab-separated values):
        #<Morph::Person @name="Ali Davidson", @party="blue">,
        #<Morph::Person @name="Sue Smith", @party="green">]
 
-    people.last.party
-
-    # => "green"
+    people.last.party  # => "green"
+```
 
 ## Morph creating classes `from_xml`
 
 Here's example code showing Morph playing with XML:
 
+```rb
     xml = %Q[<?xml version="1.0" encoding="UTF-8"?>
       <councils type="array">
         <council code='1'>
@@ -120,9 +119,8 @@ Here's example code showing Morph playing with XML:
     # => [#<Morph::Council @code="1", @name="Aberdeen City Council">,
        #<Morph::Council @code="2", @name="Allerdale Borough Council">]
 
-    councils.first.name
-
-    # => "Aberdeen City Council"
+    councils.first.name   # => "Aberdeen City Council"
+```
 
 ## Registering a listener to new class / methods via `register_listener`
 
@@ -131,27 +129,39 @@ created.
 
 For example given Morph used as a mixin:
 
-    class Project; include Morph; end
+```rb
+    class Project
+      include Morph
+    end
+
     project = Project.new
+```
 
 Register listener:
 
+```rb
     listener = -> (klass, method) do
       puts "class: #{klass.to_s} --- method: #{method}"
     end
+
     Morph.register_listener listener
+```
 
 Callback prints string as new methods are created via assignment calls:
 
+```rb
     project.deadline = "11 11 2075"
     # class: Project --- method: deadline
 
     project.completed = true
     # class: Project --- method: completed
+```
 
 To unregister a listener use `unregister_listener`:
 
+```rb
     Morph.unregister_listener listener
+```
 
 For an example of Morph's `register_listener` being used to
 [create a Github API](https://github.com/robmckinnon/hubbit/blob/master/lib/hubbit.rb)
@@ -161,15 +171,19 @@ see the [Hubbit module](https://github.com/robmckinnon/hubbit/blob/master/lib/hu
 
 Time to generate an Active Record model? Get a sample script line like this:
 
+```rb
     Morph.script_generate(Project)
     #=> "rails destroy model Project;
     #    rails generate model Project completed:string deadline:string
+```
 
 or specify the generator:
 
-    Morph.script_generate(Hubbit, :generator => 'rspec_model')
+```rb
+    Morph.script_generate(Project, :generator => 'rspec_model')
     #=> "rails destroy rspec_model Project;
     #    rails generate rspec_model Project completed:string deadline:string
+```
 
 You'll have to edit this as it currently sets all data types to be string, and
 doesn't understand associations.
@@ -177,40 +191,58 @@ doesn't understand associations.
 
 ## Morph setting hash of attributes via `morph`
 
-    class Order; include Morph; end
+```rb
+    class Order
+      include Morph
+    end
+
     order = Order.new
+```
 
 How about adding a hash of attribute values?
 
+```rb
     order.morph :drink => 'tea', :spoons_of_sugar => 2, :milk => 'prefer soya thanks'
+```
 
 Looks like we got 'em:
 
-    order.drink  # => "tea"
+```rb
+    order.drink            # => "tea"
     order.spoons_of_sugar  # => 2
-    order.milk  # => "prefer soya thanks"
-
+    order.milk             # => "prefer soya thanks"
+```
 
 ## Morph obtaining hash of attributes via `morph_attributes`
 
 Create an item:
 
-    class Item; include Morph; end
+```rb
+    class Item
+      include Morph
+    end
+
     item = Item.new
     item.morph :name => 'spinach', :cost => 0.50
+```
 
 Now an order:
 
-    class Order; include Morph; end
+```rb
+    class Order
+      include Morph
+    end
+
     order = Order.new
     order.no = 123
     order.items = [item]
+```
 
 Want to retrieve all that as a nested hash of values? No problem:
 
-    order.morph_attributes
-
-    # => {:items=>[{:name=>"spinach", :cost=>0.5}], :no=>123}
+```rb
+    order.morph_attributes  # => {:items=>[{:name=>"spinach", :cost=>0.5}], :no=>123}
+```
 
 
 ## Last bits
