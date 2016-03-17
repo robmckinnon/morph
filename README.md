@@ -50,21 +50,13 @@ Here's an example showing Morph creating classes and objects from JSON:
     #     @url="https://api.github.com/repos/robmckinnon/morph">
     # >
 
-    event.class
+    event.class                   # => Github::PushEvent
 
-    # => Github::PushEvent
+    event.class.morph_attributes  # => [:id, :type, :actor, :repo]
 
-    event.class.morph_attributes
+    event.actor.class             # => Github::Actor
 
-    # => [:id, :type, :actor, :repo]
-
-    event.actor.class
-
-    # => Github::Actor
-
-    event.repo.class
-
-    # => Github::Repo
+    event.repo.class              # => Github::Repo
 ```
 
 If namespace module not provided, new classes are created in Morph module.
@@ -72,9 +64,7 @@ If namespace module not provided, new classes are created in Morph module.
 ```rb
     event = Morph.from_json json, type, namespace
 
-    event.class
-
-    # => Morph::PushEvent
+    event.class  # => Morph::PushEvent
 ```
 
 ## Morph creating classes `from_csv`
@@ -90,9 +80,7 @@ Here's an example showing Morph playing with CSV (comma-separated values):
        #<Morph::Person @name="Ali Davidson", @party="blue">,
        #<Morph::Person @name="Sue Smith", @party="green">]
 
-    people.last.party
-
-    # => "green"
+    people.last.party  # => "green"
 ```
 
 ## Morph creating classes `from_tsv`
@@ -108,9 +96,7 @@ Here's example code showing Morph playing with TSV (tab-separated values):
        #<Morph::Person @name="Ali Davidson", @party="blue">,
        #<Morph::Person @name="Sue Smith", @party="green">]
 
-    people.last.party
-
-    # => "green"
+    people.last.party  # => "green"
 ```
 
 ## Morph creating classes `from_xml`
@@ -133,9 +119,7 @@ Here's example code showing Morph playing with XML:
     # => [#<Morph::Council @code="1", @name="Aberdeen City Council">,
        #<Morph::Council @code="2", @name="Allerdale Borough Council">]
 
-    councils.first.name
-
-    # => "Aberdeen City Council"
+    councils.first.name   # => "Aberdeen City Council"
 ```
 
 ## Registering a listener to new class / methods via `register_listener`
@@ -224,9 +208,9 @@ How about adding a hash of attribute values?
 Looks like we got 'em:
 
 ```rb
-    order.drink  # => "tea"
+    order.drink            # => "tea"
     order.spoons_of_sugar  # => 2
-    order.milk  # => "prefer soya thanks"
+    order.milk             # => "prefer soya thanks"
 ```
 
 ## Morph obtaining hash of attributes via `morph_attributes`
@@ -257,9 +241,7 @@ Now an order:
 Want to retrieve all that as a nested hash of values? No problem:
 
 ```rb
-    order.morph_attributes
-
-    # => {:items=>[{:name=>"spinach", :cost=>0.5}], :no=>123}
+    order.morph_attributes  # => {:items=>[{:name=>"spinach", :cost=>0.5}], :no=>123}
 ```
 
 
