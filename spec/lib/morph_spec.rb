@@ -29,27 +29,21 @@ describe Morph do
   let(:extended_morph) { extended_morphed_class.new }
 
   describe "when writer method that didn't exist before is called with non-nil value" do
-    before(:all) { initialize_morph }
-    after(:all)  { unload_morph_class }
-
-    let(:quack)     { 'quack' }
-    let(:attribute) { 'noise' }
-    let(:expected_morph_methods_count) { 2 }
+    include_context 'single attribute value set', 'noise', 'quack'
 
     context do
       before do
-        remove_morph_methods
-        @morph.noise = quack
+        @morph.noise = value
       end
 
       it_should_behave_like "class with generated accessor methods added"
 
       it 'should return assigned value when reader method called' do
-        expect(@morph.noise).to eq quack
+        expect(@morph.noise).to eq value
       end
 
       it 'should return hash of attributes when morph_attributes called' do
-        expect(@morph.morph_attributes).to eq({attribute.to_sym => quack})
+        expect(@morph.morph_attributes).to eq({attribute.to_sym => value})
       end
 
       it 'should generate rails model generator script line, with given model name' do
@@ -79,16 +73,11 @@ describe Morph do
   end
 
   describe "when writer method that didn't exist before is called with nil value" do
-    after(:all)  { unload_morph_class }
+    include_context 'single attribute value set', 'noise', nil
 
-    let(:attribute) { 'noise' }
+    before { @morph.noise = value }
 
-    before(:all) do
-      initialize_morph
-      @morph.noise= nil
-    end
-
-    it_should_behave_like "class without generated accessor methods added"
+    it_should_behave_like "class with generated accessor methods added"
   end
 
   describe "when different writer method called on two different morph classes" do
@@ -186,36 +175,19 @@ describe Morph do
   end
 
   describe "when writer method that didn't exist before is called with blank space attribute value" do
-    after(:all)  { unload_morph_class }
+    include_context 'single attribute value set', 'noise', '   '
 
-    let(:attribute) { 'noise' }
+    before { @morph.noise = value }
 
-    before(:all) do
-      initialize_morph
-      @morph.noise = '   '
-    end
-
-    it_should_behave_like "class without generated accessor methods added"
+    it_should_behave_like "class with generated accessor methods added"
   end
 
   describe 'when morph method used to set attribute value' do
-    before(:all) { initialize_morph }
-    after(:all)  { unload_morph_class }
+    include_context 'single attribute value set', 'reading', '20 Mar 2008'
 
-    let(:attribute) { 'reading' }
-    let(:value)     { '20 Mar 2008' }
-    let(:expected_morph_methods_count) { 2 }
-
-    before do
-      remove_morph_methods
-      @morph.morph('Reading', value)
-    end
+    before { @morph.morph('Reading', value) }
 
     it_should_behave_like "class with generated accessor methods added"
-
-    it 'should return assigned value when reader method called' do
-      expect(@morph.reading).to eq value
-    end
   end
 
   describe 'when morph method used to set an attribute value hash' do
@@ -224,6 +196,7 @@ describe Morph do
 
     let(:expected_morph_methods_count) { 6 }
     let(:attributes) { [:drink,:sugars,:milk] }
+    let(:value) { 'tea' }
 
     before do
       remove_morph_methods
@@ -266,10 +239,6 @@ describe Morph do
     end
 
     it_should_behave_like "class with generated accessor methods added"
-
-    it 'should return assigned value when reader method called' do
-      @morph.send(@attribute.to_sym) == @age
-    end
   end
   describe "when morph method used to set japanese and latin unicode attribute name with a value" do
     before :all do initialize_morph; end
@@ -289,37 +258,23 @@ describe Morph do
     end
 
     it_should_behave_like "class with generated accessor methods added"
-
-    it 'should return assigned value when reader method called' do
-      @morph.send(@attribute.to_sym) == @age
-    end
   end
 =end
 
   describe 'when morph method used to set blank space attribute value' do
-    after(:all)  { unload_morph_class }
+    include_context 'single attribute value set', 'pizza', '   '
 
-    let(:attribute) { 'pizza' }
+    before(:each) { @morph.morph('Pizza', value) }
 
-    before(:all) do
-      initialize_morph
-      @morph.morph('Pizza', '   ')
-    end
-
-    it_should_behave_like "class without generated accessor methods added"
+    it_should_behave_like "class with generated accessor methods added"
   end
 
   describe 'when morph method used to set nil attribute value' do
-    after(:all)  { unload_morph_class }
+    include_context 'single attribute value set', 'pizza', nil
 
-    let(:attribute) { 'pizza' }
+    before { @morph.morph('Pizza', value) }
 
-    before(:all) do
-      initialize_morph
-      @morph.morph('Pizza', nil)
-    end
-
-    it_should_behave_like "class without generated accessor methods added"
+    it_should_behave_like "class with generated accessor methods added"
   end
 
 
@@ -340,24 +295,11 @@ describe Morph do
   end
 
   describe "when writer method called matches a class reader method" do
+    include_context 'single attribute value set', 'name', 'Morph'
 
-    before(:all) { initialize_morph }
-    after(:all)  { unload_morph_class }
-
-    let(:attribute) { 'name' }
-    let(:value)     { 'Morph' }
-    let(:expected_morph_methods_count) { 2 }
-
-    before do
-      remove_morph_methods
-      @morph.name = value
-    end
+    before { @morph.name = value }
 
     it_should_behave_like "class with generated accessor methods added"
-
-    it 'should return assigned value when reader method called' do
-      expect(@morph.name).to eq value
-    end
   end
 
 
@@ -695,14 +637,14 @@ xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.x
       expect(councillor.party).to eq 'labour'
       expect(councillor.councillors).to eq 'Councillor for Stretford Ward'
       expect(councillor.councils).to eq 'Trafford Council'
-      expect(councillor.respond_to?(:council_experience)).to be false
+      expect(councillor.respond_to?(:council_experience)).to be true
 
       councillor = councillors.last
       expect(councillor.name).to eq 'Ali Davidson'
       expect(councillor.party).to eq 'labour'
       expect(councillor.councillors).to eq nil_value
       expect(councillor.councils).to eq 'Basildon District Council'
-      expect(councillor.respond_to?(:council_experience)).to be false
+      expect(councillor.respond_to?(:council_experience)).to be true
     end
 
     describe 'tsv (tab separated value)' do

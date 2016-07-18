@@ -64,7 +64,13 @@ shared_examples_for "class with generated accessor methods added" do |klass|
     klass = morphed_class unless klass
   end
 
-  it 'should add reader method to class instance_methods list' do
+  it 'sets first attribute value correctly' do
+    attribute = nil
+    each_attribute {|a| attribute = a unless attribute}
+    expect(@morph.send(attribute)).to eq value
+  end
+
+  it 'adds reader method to class instance_methods list' do
     if RUBY_VERSION >= "1.9"
       each_attribute { |a| expect(instance_methods(klass)).to include(a.to_s.to_sym) }
     else
@@ -72,7 +78,7 @@ shared_examples_for "class with generated accessor methods added" do |klass|
     end
   end
 
-  it 'should add writer method to class instance_methods list' do
+  it 'adds writer method to class instance_methods list' do
     if RUBY_VERSION >= "1.9"
       each_attribute { |a| expect(instance_methods(klass)).to include("#{a}=".to_sym) }
     else
@@ -80,7 +86,7 @@ shared_examples_for "class with generated accessor methods added" do |klass|
     end
   end
 
-  it 'should add reader method to class morph_methods list' do
+  it 'adds reader method to class morph_methods list' do
     if RUBY_VERSION >= "1.9"
       each_attribute { |a| expect(morph_methods(klass)).to include(a.to_s.to_sym) }
     else
@@ -88,7 +94,7 @@ shared_examples_for "class with generated accessor methods added" do |klass|
     end
   end
 
-  it 'should add writer method to class morph_methods list' do
+  it 'adds writer method to class morph_methods list' do
     if RUBY_VERSION >= "1.9"
       each_attribute { |a| expect(morph_methods(klass)).to include("#{a}=".to_sym) }
     else
@@ -96,31 +102,19 @@ shared_examples_for "class with generated accessor methods added" do |klass|
     end
   end
 
-  it 'should only have generated accessor methods in morph_methods list' do
+  it 'only has generated accessor methods in morph_methods list' do
     expect(morph_methods(klass).size).to eq expected_morph_methods_count
   end
 
 end
 
-shared_examples_for "class without generated accessor methods added" do
+shared_context 'single attribute value set' do |field, value|
+  before(:all)  { initialize_morph }
+  after(:all)  { unload_morph_class }
 
-  it 'should not add reader method to class instance_methods list' do
-    expect(instance_methods).to_not include(attribute)
-  end
+  let(:attribute) { field }
+  let(:expected_morph_methods_count) { 2 }
+  let(:value) { value }
 
-  it 'should not add writer method to class instance_methods list' do
-    expect(instance_methods).to_not include("#{attribute}=")
-  end
-
-  it 'should not add reader method to class morph_methods list' do
-    expect(morph_methods).to_not include(attribute)
-  end
-
-  it 'should not add writer method to class morph_methods list' do
-    expect(morph_methods).to_not include("#{attribute}=")
-  end
-
-  it 'should have empty morph_methods list' do
-    expect(morph_methods.size).to eq 0
-  end
+  before { remove_morph_methods }
 end
