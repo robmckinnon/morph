@@ -111,7 +111,7 @@ module Chas
   end
 
   def self.argument_provided? args
-    args.size > 0 && !args[0].nil? && !(args[0].is_a?(String) && args[0].strip.size == 0)
+    args.size > 0
   end
 
   def self.convert_to_morph_class_name label
@@ -132,7 +132,7 @@ module Chas
 end
 
 module Morph
-  VERSION = '0.4.1' unless defined? Morph::VERSION
+  VERSION = '0.5.0' unless defined? Morph::VERSION
 
   class << self
     def classes

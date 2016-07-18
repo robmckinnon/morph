@@ -81,14 +81,15 @@ describe Morph do
   describe "when writer method that didn't exist before is called with nil value" do
     after(:all)  { unload_morph_class }
 
-    let(:attribute) { 'noise' }
+    let(:attributes) { ['noise'] }
+    let(:expected_morph_methods_count) { 2 }
 
     before(:all) do
       initialize_morph
       @morph.noise= nil
     end
 
-    it_should_behave_like "class without generated accessor methods added"
+    it_should_behave_like "class with generated accessor methods added"
   end
 
   describe "when different writer method called on two different morph classes" do
@@ -188,14 +189,15 @@ describe Morph do
   describe "when writer method that didn't exist before is called with blank space attribute value" do
     after(:all)  { unload_morph_class }
 
-    let(:attribute) { 'noise' }
+    let(:attributes) { [:noise] }
+    let(:expected_morph_methods_count) { 2 }
 
     before(:all) do
       initialize_morph
       @morph.noise = '   '
     end
 
-    it_should_behave_like "class without generated accessor methods added"
+    it_should_behave_like "class with generated accessor methods added"
   end
 
   describe 'when morph method used to set attribute value' do
@@ -299,27 +301,29 @@ describe Morph do
   describe 'when morph method used to set blank space attribute value' do
     after(:all)  { unload_morph_class }
 
-    let(:attribute) { 'pizza' }
+    let(:attributes) { [:pizza] }
+    let(:expected_morph_methods_count) { 2 }
 
     before(:all) do
       initialize_morph
       @morph.morph('Pizza', '   ')
     end
 
-    it_should_behave_like "class without generated accessor methods added"
+    it_should_behave_like "class with generated accessor methods added"
   end
 
   describe 'when morph method used to set nil attribute value' do
     after(:all)  { unload_morph_class }
 
-    let(:attribute) { 'pizza' }
+    let(:attributes) { [:pizza] }
+    let(:expected_morph_methods_count) { 2 }
 
     before(:all) do
       initialize_morph
       @morph.morph('Pizza', nil)
     end
 
-    it_should_behave_like "class without generated accessor methods added"
+    it_should_behave_like "class with generated accessor methods added"
   end
 
 
@@ -695,14 +699,14 @@ xsi_schema_location: xmlgwdev.companieshouse.gov.uk/v1-0/schema/CompanyDetails.x
       expect(councillor.party).to eq 'labour'
       expect(councillor.councillors).to eq 'Councillor for Stretford Ward'
       expect(councillor.councils).to eq 'Trafford Council'
-      expect(councillor.respond_to?(:council_experience)).to be false
+      expect(councillor.respond_to?(:council_experience)).to be true
 
       councillor = councillors.last
       expect(councillor.name).to eq 'Ali Davidson'
       expect(councillor.party).to eq 'labour'
       expect(councillor.councillors).to eq nil_value
       expect(councillor.councils).to eq 'Basildon District Council'
-      expect(councillor.respond_to?(:council_experience)).to be false
+      expect(councillor.respond_to?(:council_experience)).to be true
     end
 
     describe 'tsv (tab separated value)' do

@@ -102,25 +102,3 @@ shared_examples_for "class with generated accessor methods added" do |klass|
 
 end
 
-shared_examples_for "class without generated accessor methods added" do
-
-  it 'should not add reader method to class instance_methods list' do
-    expect(instance_methods).to_not include(attribute)
-  end
-
-  it 'should not add writer method to class instance_methods list' do
-    expect(instance_methods).to_not include("#{attribute}=")
-  end
-
-  it 'should not add reader method to class morph_methods list' do
-    expect(morph_methods).to_not include(attribute)
-  end
-
-  it 'should not add writer method to class morph_methods list' do
-    expect(morph_methods).to_not include("#{attribute}=")
-  end
-
-  it 'should have empty morph_methods list' do
-    expect(morph_methods.size).to eq 0
-  end
-end
