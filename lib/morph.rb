@@ -132,7 +132,7 @@ module Chas
 end
 
 module Morph
-  VERSION = '0.5.0' unless defined? Morph::VERSION
+  VERSION = '0.5.1' unless defined? Morph::VERSION
 
   class << self
     def classes
