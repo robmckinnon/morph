@@ -132,7 +132,7 @@ module Chas
 end
 
 module Morph
-  VERSION = '0.5.0' unless defined? Morph::VERSION
+  VERSION = '0.5.1' unless defined? Morph::VERSION
 
   class << self
     def classes
@@ -303,7 +303,7 @@ module Morph
           value = value.to_time if defined?(XMLRPC::DateTime) && value.is_a?(XMLRPC::DateTime)
 
           case value
-            when String, Date, Time, TrueClass, FalseClass, Fixnum, Float
+            when String, Date, Time, TrueClass, FalseClass, Integer, Float
               object.morph(attribute, value)
             when Array
               attribute = attribute.pluralize
