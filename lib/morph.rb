@@ -1,8 +1,6 @@
-if RUBY_VERSION >= "1.9"
-  require 'csv'
-end
+require 'csv'
+
 begin
-  # require 'active_support'
   require 'active_support/core_ext/object/blank'
   require 'active_support/inflector'
   require 'active_support/core_ext/string/inflections'
@@ -63,11 +61,7 @@ module Chas
   end
 
   def self.morph_methods klass
-    methods = if RUBY_VERSION >= "1.9"
-      @morph_methods[klass].keys.sort
-    else
-      @morph_methods[klass].keys.map(&:to_s).sort
-    end
+    methods = @morph_methods[klass].keys.sort
 
     if klass.superclass.respond_to?(:morph_attributes)
       methods += klass.superclass.morph_methods
@@ -97,9 +91,7 @@ module Chas
 
   def self.morph_method_missing object, symbol, *args
     attribute = symbol.to_s.chomp '='
-    if RUBY_VERSION >= "1.9"
-      attribute = attribute.to_sym
-    end
+    attribute = attribute.to_sym
 
     if Object.instance_methods.include?(attribute)
       raise "'#{attribute}' is an instance_method on Object, cannot create accessor methods for '#{attribute}'"
@@ -132,7 +124,7 @@ module Chas
 end
 
 module Morph
-  VERSION = '0.5.1' unless defined? Morph::VERSION
+  VERSION = '0.6.0' unless defined? Morph::VERSION
 
   class << self
     def classes
@@ -157,23 +149,13 @@ module Morph
 
     def from_csv csv, class_name, namespace=Morph
       objects = []
-      if !(RUBY_VERSION >= "1.9")
-        begin
-          require 'fastercsv'
-        rescue LoadError
-          puts "\nYou need to install the fastercsv gem to use Morph.from_csv() with Ruby 1.8"
-          puts "  gem install fastercsv\n"
+      CSV.parse(csv, { :headers => true }) do |row|
+        object = object_from_name class_name, namespace
+        row.each do |key, value|
+          object.morph(key, value)
         end
+        objects << object
       end
-
-      csv_utility = (RUBY_VERSION >= "1.9") ? CSV : 'FasterCSV'.constantize
-      csv_utility.parse(csv, { :headers => true }) do |row|
-          object = object_from_name class_name, namespace
-          row.each do |key, value|
-            object.morph(key, value)
-          end
-          objects << object
-        end
       objects
     end
 

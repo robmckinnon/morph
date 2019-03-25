@@ -14,7 +14,7 @@ To use Morph:
     require 'morph'
 ```
 
-Tested to work with Ruby 1.8 - 2.3, JRuby 9, and Rubinius 3.
+Tested to work with Ruby 2.2 - 2.6.
 
 ## Morph creating classes `from_json`
 

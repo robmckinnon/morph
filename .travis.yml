@@ -1,8 +1,10 @@
 language: ruby
 rvm:
-  - 2.4.0
-  - 2.3.1
-  - 2.2.5
+  - 2.6.2
+  - 2.5.5
+  - 2.4.5
+  - 2.3.8
+  - 2.2.10
   - ruby-head
 bundler_args: --without test
 script: bundle exec rspec spec
