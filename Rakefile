@@ -16,7 +16,7 @@ spec = Gem::Specification.new do |s|
   s.version           = Morph::VERSION
   s.summary           = 'Morph allows you to emerge Ruby class definitions from data or by calling assignment methods.'
   s.author            = 'Rob McKinnon'
-  s.email             = 'rob ~@nospam@~ rubyforge.org'
+  s.email             = 'rob ~@nospam@~ movingflow'
   s.homepage          = 'https://github.com/robmckinnon/morph'
 
   s.has_rdoc          = true
@@ -27,7 +27,7 @@ spec = Gem::Specification.new do |s|
   s.files             = %w(CHANGELOG LICENSE) + Dir.glob('{lib}/**/*')
   s.require_paths     = ['lib']
 
-  s.add_runtime_dependency('activesupport', '>= 2.0.2')
+  s.add_runtime_dependency('activesupport', '>= 4.1.11')
   s.add_development_dependency('rspec')
 end
 
